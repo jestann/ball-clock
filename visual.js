@@ -12,11 +12,11 @@ class Track {
 }
 
 const makeTracks = (width, height, ballRadius, numTracks=4) => {
-  const ballHeight = ballRadius + 10
-  const interval = height - 2*ballHeight
+  const ballHeight = ballRadius*2 + 10
+  const interval = (height - 2*ballHeight) / numTracks
   let tracks = []
   for (let i=0; i<numTracks; i++) {
-    let startX = (i%2===0) ? 0 : width
+    let startX = (i%2===0) ? width : 0
     let endX = (startX===0) ? width : 0
     let track = new Track(i, startX, ballHeight+interval*i, endX, ballHeight+interval*(i+1))
     tracks.push(track)
@@ -44,7 +44,6 @@ class Ball {
     this.y = track.startY - this.radius
     this.dX = 4
     this.dY = this.dX*track.slope
-    console.log('new track: ', this)
   }
   
   setTimeDelay(delay) {
@@ -74,7 +73,6 @@ const makeBalls = (number) => {
 const setTracks = (balls, track) => {
   balls.forEach((ball) => { 
     ball.setTrack(track) 
-    console.log(ball, track)
   })
 }
 
@@ -133,8 +131,8 @@ field.width = 700 /* window.innerWidth */
 field.height = 450 /* window.innerHeight */
 const canvas = field.getContext('2d')
 
-const tracks = makeTracks(4)
 const balls = makeBalls(4)
+const tracks = makeTracks(field.width, field.height, balls[0].radius)
 setTracks(balls, tracks[0])
 
 const render = () => {
