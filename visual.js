@@ -16,8 +16,8 @@ const makeTracks = (width, height, ballRadius, numTracks=4) => {
   const interval = height - 2*ballHeight
   let tracks = []
   for (let i=0; i<numTracks; i++) {
-    startX = (i%2===0) ? 0 : width
-    endX = (startX===0) ? width : 0
+    let startX = (i%2===0) ? 0 : width
+    let endX = (startX===0) ? width : 0
     let track = new Track(i, startX, ballHeight+interval*i, endX, ballHeight+interval*(i+1))
     tracks.push(track)
   }
@@ -31,17 +31,31 @@ class Ball {
     this.radius = 20
     this.x = 0
     this.y = 0
-    this.dX = 2
-    this.dY = 2
+    this.dX = 0
+    this.dY = 0
     this.track = null
+    this.timeDelay = null
+    this.moving = false
   }
   
   setTrack(track) {
     this.track = track.number
-    this.x = track.startX - ball.radius
-    this.y = track.startY - ball.radius
-    ball.dX = 2
-    ball.dY = 2*this.slope
+    this.x = track.startX - this.radius
+    this.y = track.startY - this.radius
+    this.dX = 4
+    this.dY = this.dX*track.slope
+  }
+  
+  setTimeDelay(delay) {
+    this.timeDelay = delay
+  }
+  
+  start () {
+    this.moving = true
+  }
+  
+  stop () {
+    this.moving = false
   }
 }
 
@@ -50,52 +64,37 @@ const makeBalls = (number) => {
   for (let i = 1; i <= number; i++) {
     // let color = `rgb(${Math.rand() * 255}, ${Math.rand()*255}, ${Math.rand()*255})`
     let ball = new Ball(i)
-    
-    balls.push(ball);
+    ball.setTrack(0)
+    ball.setTimeDelay((i-1)*1000)
+    balls.push(ball)
   }
   return balls
 }
 
-
-const field = document.getElementById('canvas')
-field.width = 700 /* window.innerWidth */
-field.height = 450 /* window.innerHeight */
-const canvas = field.getContext('2d')
-
-const ball = new Ball(1)
-
-const drawLine = (track) => {
+const drawTrack = (canvas, track) => {
   canvas.beginPath()
   canvas.moveTo(track.startX, track.startY)
   canvas.lineTo(track.endX, track.endY)
   canvas.lineWidth = '10'
   canvas.lineCap = 'round'
-  // const lin = createLinearGradient(0,0,field.width, field.height)
-  // lin.addColorStop(0, '#777')
-  // lin.addColorStop(1, '#555')
-  // canvas.fillStyle = lin
   canvas.strokeStyle = '#444'
   canvas.stroke()
 }
 
-const drawLines = (tracks) => {
+const addBall = (balls, index) => {
+  if (balls[index]) { balls[index].start() }
+}
+
+const drawTracks = (canvas, tracks) => {
   canvas.save()
-  tracks.forEach((track) => { drawLine(track) })
+  tracks.forEach((track) => { drawTrack(canvas, track) })
   canvas.restore()
 }
 
-const render = () => {
-  canvas.beginPath()
-  canvas.clearRect(0, 0, field.width, field.height)
-  
-  drawLines(tracks)
-
-  // render ball
+const drawBall = (canvas, ball) => {
+  if (!ball.moving) { return }
   canvas.save()
-  // ball.dY = ball.dX*tracks[ball.track-1].slope
   canvas.beginPath()
-  // canvas.translate(point.x+ball.radius,point.y-11);
-  // canvas.rotate(Math.PI/20);
   const gradient = canvas.createRadialGradient(ball.x, ball.y, 5, ball.x-5, ball.y-5, ball.radius)
   gradient.addColorStop(0, '#444')
   gradient.addColorStop(1, '#222')
@@ -117,16 +116,42 @@ const render = () => {
   ball.y += ball.dY
 }
 
+const drawBalls = (balls, canvas) => {
+  balls.forEach((ball) => { drawBall(ball, canvas) })
+}
+
+// make canvas
+const field = document.getElementById('canvas')
+field.width = 700 /* window.innerWidth */
+field.height = 450 /* window.innerHeight */
+const canvas = field.getContext('2d')
+
+const tracks = makeTracks(4)
+const balls = makeBalls(4)
+const whichBall = 0
+
+const render = () => {
+  canvas.beginPath()
+  canvas.clearRect(0, 0, field.width, field.height)
+  
+  drawTracks(tracks, canvas)
+  drawBalls(balls, canvas)
+}
+
+// make other UI stuff
 let animate = null
 const start = document.getElementById('start')
 start.addEventListener('click', () => {
-  animate = setInterval(() => { render() }, 25)
-  /*  setInterval(() => {
-    track1.points.forEach((point) => render(point))
-  }, 25) */
+  animate = setInterval(render, 25)
 })
 
 const refresh = document.getElementById('refresh')
-refresh.addEventListener('refresh', () => {
+refresh.addEventListener('click', () => {
   clearInterval(animate)
+})
+
+const add = document.getElementById('add')
+add.addEventListener('click', () => {
+  addBall(balls, whichBall)
+  whichBall++
 })
