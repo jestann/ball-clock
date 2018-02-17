@@ -44,6 +44,7 @@ class Ball {
     this.y = track.startY - this.radius
     this.dX = 4
     this.dY = this.dX*track.slope
+    console.log('new track: ', this)
   }
   
   setTimeDelay(delay) {
@@ -61,14 +62,20 @@ class Ball {
 
 const makeBalls = (number) => {
   let balls = []
-  for (let i = 1; i <= number; i++) {
+  for (let i = 0; i < number; i++) {
     // let color = `rgb(${Math.rand() * 255}, ${Math.rand()*255}, ${Math.rand()*255})`
-    let ball = new Ball(i)
-    ball.setTrack(0)
-    ball.setTimeDelay((i-1)*1000)
+    let ball = new Ball(i+1)
+    ball.setTimeDelay(i*1000)
     balls.push(ball)
   }
   return balls
+}
+
+const setTracks = (balls, track) => {
+  balls.forEach((ball) => { 
+    ball.setTrack(track) 
+    console.log(ball, track)
+  })
 }
 
 const drawTrack = (canvas, track) => {
@@ -79,10 +86,6 @@ const drawTrack = (canvas, track) => {
   canvas.lineCap = 'round'
   canvas.strokeStyle = '#444'
   canvas.stroke()
-}
-
-const addBall = (balls, index) => {
-  if (balls[index]) { balls[index].start() }
 }
 
 const drawTracks = (canvas, tracks) => {
@@ -116,8 +119,12 @@ const drawBall = (canvas, ball) => {
   ball.y += ball.dY
 }
 
-const drawBalls = (balls, canvas) => {
-  balls.forEach((ball) => { drawBall(ball, canvas) })
+const drawBalls = (canvas, balls) => {
+  balls.forEach((ball) => { drawBall(canvas, ball) })
+}
+
+const addBall = (balls, index) => {
+  if (balls[index]) { balls[index].start() }
 }
 
 // make canvas
@@ -128,14 +135,14 @@ const canvas = field.getContext('2d')
 
 const tracks = makeTracks(4)
 const balls = makeBalls(4)
-const whichBall = 0
+setTracks(balls, tracks[0])
 
 const render = () => {
   canvas.beginPath()
   canvas.clearRect(0, 0, field.width, field.height)
   
-  drawTracks(tracks, canvas)
-  drawBalls(balls, canvas)
+  drawTracks(canvas, tracks)
+  drawBalls(canvas, balls)
 }
 
 // make other UI stuff
@@ -150,6 +157,7 @@ refresh.addEventListener('click', () => {
   clearInterval(animate)
 })
 
+const whichBall = 0
 const add = document.getElementById('add')
 add.addEventListener('click', () => {
   addBall(balls, whichBall)
