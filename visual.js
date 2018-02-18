@@ -297,7 +297,7 @@ class Bin {
   empty () {
     if (!this.balls[0]) { return }
     let firstBall = this.balls.pop()
-    firstBall.startNextTrack()
+    firstBall.leaveBinLever()
     while (this.balls[0]) { this.sendBallHome() }
   }
   
