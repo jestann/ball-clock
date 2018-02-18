@@ -300,6 +300,13 @@ class Bin {
     firstBall.startNextTrack()
     while (this.balls[0]) { this.sendBallHome() }
   }
+  
+  emptyOnCommand () {
+    if (!this.balls[0]) { return }
+    let firstBall = this.balls.pop()
+    firstBall.leaveBin()
+    while (this.balls[0]) { this.sendBallHome() }
+  }
 }
 
 const drawBin = (canvas, bin) => {
@@ -424,17 +431,17 @@ add.addEventListener('click', () => {
 
 const min = document.getElementById('min')
 min.addEventListener('click', () => {
-  bins.min.empty()
+  bins.min.emptyOnCommand()
 })
 
 const five = document.getElementById('five')
 five.addEventListener('click', () => {
-  bins.five.empty()
+  bins.five.emptyOnCommand()
 })
 
 const hour = document.getElementById('hour')
-five.addEventListener('click', () => {
-  bins.hour.empty()
+hour.addEventListener('click', () => {
+  bins.hour.emptyOnCommand()
 })
 
 const stop = document.getElementById('stop')
