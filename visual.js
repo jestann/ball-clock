@@ -69,6 +69,7 @@ class Ball {
   enterBin () {
     let roomLeft = this.bin.addBall(this)
     this.numberInBin = roomLeft ? roomLeft : null
+    this.inBin = true
     
     this.dY = 0
     if (this.forward) {
@@ -211,7 +212,7 @@ const drawBalls = (canvas, balls) => {
   }
 }
 
-const addBall = (balls, index) => {
+const startBall = (balls, index) => {
   if (balls[index]) { balls[index].makeLive() }
 }
 
@@ -272,11 +273,12 @@ class Bin {
   }
   
   addBall (ball) {
-    if (this.balls.length === this.capacity) {
+    // console.log('balls ', this.balls)
+    /* if (this.balls.length === this.capacity) {
       console.log('EMPTY ', this.balls.length, ' in ', this.capacity)
       this.empty()
       return false
-    }
+    } */
     this.balls.push(ball)
     return this.balls.length
   }
@@ -410,7 +412,7 @@ start.addEventListener('click', () => {
 let whichBall = 0
 const add = document.getElementById('add')
 add.addEventListener('click', () => {
-  addBall(balls, whichBall)
+  startBall(balls, whichBall)
   whichBall++
 })
 
