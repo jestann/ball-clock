@@ -83,19 +83,27 @@ class Ball {
 }
 
 const makeColor = () => {
-  let red = Math.floor(Math.random()*255)
-  let green = Math.floor(Math.random()*255)
-  let blue = Math.floor(Math.random()*255)
-  const color = `rgb(${red}, ${green}, ${blue})`
-  return color
+  let red = Math.floor(Math.random()*200)+50
+  let green = Math.floor(Math.random()*200)+50
+  let blue = Math.floor(Math.random()*200)+50
+  let color = `rgb(${red}, ${green}, ${blue})`
+  return { red, green, blue, color }
+}
+
+const darken = (color) => {
+  let red = Math.floor(color.red*.5)
+  let green = Math.floor(color.green*.5)
+  let blue = Math.floor(color.blue*.5)
+  let darker = `rgb(${red}, ${green}, ${blue})`
+  return { red, green, blue, color: darker }
 }
 
 const makeBalls = (number) => {
   let balls = []
   for (let i = 0; i < number; i++) {
     let color0 = makeColor()
-    let color1 = makeColor()
-    let ball = new Ball(i+1, color0, color1)
+    let color1 = darken(color0)
+    let ball = new Ball(i+1, color0.color, color1.color)
     balls.push(ball)
   }
   return balls
@@ -154,7 +162,7 @@ field.width = 700 /* window.innerWidth */
 field.height = 450 /* window.innerHeight */
 const canvas = field.getContext('2d')
 
-const balls = makeBalls(4)
+const balls = makeBalls(100)
 const tracks = makeTracks(field.width, field.height, balls[0].radius)
 setTracks(balls, tracks[0])
 
