@@ -436,7 +436,7 @@ min.addEventListener('click', () => {
 
 const five = document.getElementById('five')
 five.addEventListener('click', () => {
-  bins.five.emptyOnCommand()
+  bins.fiveMin.emptyOnCommand()
 })
 
 const hour = document.getElementById('hour')
