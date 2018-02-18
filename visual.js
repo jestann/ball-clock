@@ -211,10 +211,10 @@ class Ball {
     this.dY = 0
     if (this.forward) {
       this.binFrontX = this.targetBigX
-      this.targetBigX = this.bin.backX
+      this.targetBigX = this.bin.backX - this.radius
     } else {
       this.binFrontX = this.targetZeroX
-      this.targetZeroX = this.bin.backX
+      this.targetZeroX = this.bin.backX + this.radius
       /* need to add shift for more balls */
     }
   }
