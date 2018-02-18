@@ -1,3 +1,5 @@
+/* --------- TRACKS ----------- */
+
 class Track {
   constructor(number, startX, startY, endX, endY) {
     this.number = number
@@ -13,7 +15,7 @@ class Track {
 
 const makeTracks = (width, height, ballRadius, numTracks=4) => {
   const ballHeight = ballRadius*2 + 10
-  const interval = (height - 2*ballHeight) / numTracks
+  const interval = (height - ballHeight - 10) / numTracks
   let tracks = []
   for (let i=0; i<numTracks; i++) {
     let startX = (i%2===0) ? width : 0
@@ -24,10 +26,30 @@ const makeTracks = (width, height, ballRadius, numTracks=4) => {
   return tracks
 }
 
+const drawTrack = (canvas, track) => {
+  canvas.beginPath()
+  canvas.moveTo(track.startX, track.startY)
+  canvas.lineTo(track.endX, track.endY)
+  canvas.lineWidth = '10'
+  canvas.lineCap = 'round'
+  canvas.strokeStyle = '#444'
+  canvas.stroke()
+}
+
+const drawTracks = (canvas, tracks) => {
+  canvas.save()
+  tracks.forEach((track) => { drawTrack(canvas, track) })
+  canvas.restore()
+}
+
+
+/* --------- BALLS ----------- */
+
 class Ball {
-  constructor(number, color=null) {
+  constructor(number, color0='#444', color1='#222') {
     this.number = number
-    this.color = color // null gives it default color
+    this.color0 = color0
+    this.color1 = color1
     this.radius = 20
     this.x = 0
     this.y = 0
@@ -65,11 +87,14 @@ class Ball {
   }
 }
 
+const makeColor = () => ( `rgb(${Math.rand() * 255}, ${Math.rand()*255}, ${Math.rand()*255})` )
+
 const makeBalls = (number) => {
   let balls = []
   for (let i = 0; i < number; i++) {
-    // let color = `rgb(${Math.rand() * 255}, ${Math.rand()*255}, ${Math.rand()*255})`
-    let ball = new Ball(i+1)
+    let color0 = makeColor()
+    let color1 = makeColor()
+    let ball = new Ball(i+1, color0, color1)
     ball.setTimeDelay(i*1000)
     balls.push(ball)
   }
@@ -82,37 +107,21 @@ const setTracks = (balls, track) => {
   })
 }
 
-const drawTrack = (canvas, track) => {
-  canvas.beginPath()
-  canvas.moveTo(track.startX, track.startY)
-  canvas.lineTo(track.endX, track.endY)
-  canvas.lineWidth = '10'
-  canvas.lineCap = 'round'
-  canvas.strokeStyle = '#444'
-  canvas.stroke()
-}
-
-const drawTracks = (canvas, tracks) => {
-  canvas.save()
-  tracks.forEach((track) => { drawTrack(canvas, track) })
-  canvas.restore()
-}
-
 const drawBall = (canvas, ball) => {
   if (!ball.live) { return }
   console.log('drawing ball ', ball.number)
   canvas.save()
   canvas.beginPath()
   const gradient = canvas.createRadialGradient(ball.x, ball.y, 5, ball.x-5, ball.y-5, ball.radius)
-  gradient.addColorStop(0, '#444')
-  gradient.addColorStop(1, '#222')
+  gradient.addColorStop(0, ball.color0)
+  gradient.addColorStop(1, ball.color1)
   canvas.fillStyle = gradient
   canvas.arc(ball.x, ball.y, ball.radius, 0+ball.x/ball.radius, 2*Math.PI+ball.x/ball.radius, false)
   canvas.lineTo(ball.x, ball.y)
   canvas.fill()
   canvas.lineWidth = '5'
   canvas.lineCap = 'round'
-  canvas.strokeStyle = '#222'
+  canvas.strokeStyle = ball.color1
   canvas.stroke()
   canvas.restore()
   
@@ -137,7 +146,10 @@ const addBall = (balls, index) => {
   if (balls[index]) { balls[index].makeLive() }
 }
 
-// make canvas
+
+
+/* --------- RENDERING ----------- */
+
 const field = document.getElementById('canvas')
 field.width = 700 /* window.innerWidth */
 field.height = 450 /* window.innerHeight */
@@ -155,15 +167,17 @@ const render = () => {
   drawBalls(canvas, balls)
 }
 
-// make other UI stuff
+
+/* --------- BUTTON HANDLERS ----------- */
+
 let animate = null
 const start = document.getElementById('start')
 start.addEventListener('click', () => {
   animate = setInterval(render, 25)
 })
 
-const refresh = document.getElementById('refresh')
-refresh.addEventListener('click', () => {
+const stop = document.getElementById('stop')
+stop.addEventListener('click', () => {
   clearInterval(animate)
 })
 
