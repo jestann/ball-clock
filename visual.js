@@ -67,24 +67,26 @@ class Ball {
   }
 
   enterBin () {
+    this.setNextTrack(this.bin.nextTrack)
+    
     let roomLeft = this.bin.addBall(this)
-    this.numberInBin = roomLeft ? roomLeft : null
+    if (!roomLeft) { return }
+    this.numberInBin = roomLeft
     this.inBin = true
     
     this.dY = 0
+    this.binInc = this.bin.increment
     if (this.forward) {
       this.enteredForward = true
       this.binFrontX = this.targetBigX
       console.log('entered bin at: ', this.binFrontX)
-      this.targetBigX = this.bin.backX - this.radius*this.numberInBin
+      this.targetBigX = this.bin.backX - this.binInc*this.numberInBin
     } else {
       this.enteredForward = false
       this.binFrontX = this.targetZeroX
       console.log('entered bin at: ', this.binFrontX)
-      this.targetZeroX = this.bin.backX + this.radius*this.numberInBin
+      this.targetZeroX = this.bin.backX + this.binInc*this.numberInBin
     }
-    
-    this.setNextTrack(this.bin.nextTrack)
   }
 
   leaveBin () {
@@ -101,6 +103,10 @@ class Ball {
     console.log('tz: ', this.targetZeroX, 'tb: ', this.targetBigX)
     this.switch()
     this.start()
+  }
+  
+  leaveBinLever () {
+    this.startNextTrack()
   }
     
   startNextTrack () {
@@ -259,9 +265,10 @@ class Bin {
         
     this.forward = track.slope > 0
     this.offset = 5
-    this.maxCapacity = 5
+    this.maxCapacity = 6
     this.height = ballRadius*2 + 4*this.offset
-    this.width = ballRadius*2 * this.maxCapacity + 2*this.offset
+    let smaller = this.capacity < this.maxCapacity ? this.capacity : this.maxCapacity
+    this.width = ballRadius*2 * smaller + 2*this.offset
     this.increment = this.width / this.capacity
        
     this.enterX = this.forward ? track.endX + this.offset : track.endX - this.offset
@@ -273,14 +280,13 @@ class Bin {
   }
   
   addBall (ball) {
-    // console.log('balls ', this.balls)
-    /* if (this.balls.length === this.capacity) {
-      console.log('EMPTY ', this.balls.length, ' in ', this.capacity)
-      this.empty()
-      return false
-    } */
     this.balls.push(ball)
-    return this.balls.length
+    if (this.balls.length < this.capacity) {
+      return this.balls.length
+    }
+    console.log('EMPTY ', this.balls.length, ' in ', this.capacity)
+    this.empty()
+    return false
   }
   
   sendBallHome () {
@@ -291,7 +297,7 @@ class Bin {
   empty () {
     if (!this.balls[0]) { return }
     let firstBall = this.balls.pop()
-    firstBall.leaveBin()
+    firstBall.startNextTrack()
     while (this.balls[0]) { this.sendBallHome() }
   }
 }
