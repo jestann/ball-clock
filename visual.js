@@ -56,7 +56,6 @@ class Ball {
     this.dX = 0
     this.dY = 0
     this.track = null
-    this.timeDelay = null
     this.live = false
     this.moving = false
   }
@@ -68,11 +67,7 @@ class Ball {
     this.dY = .25
     this.dX = this.dY*(1/track.slope)
   }
-  
-  setTimeDelay(delay) {
-    this.timeDelay = delay
-  }
-  
+
   start () {
     this.moving = true
   }
@@ -87,7 +82,13 @@ class Ball {
   }
 }
 
-const makeColor = () => ( `rgb(${Math.rand() * 255}, ${Math.rand()*255}, ${Math.rand()*255})` )
+const makeColor = () => {
+  let red = Math.floor(Math.random()*255)
+  let green = Math.floor(Math.random()*255)
+  let blue = Math.floor(Math.random()*255)
+  const color = `rgb(${red}, ${green}, ${blue})`
+  return color
+}
 
 const makeBalls = (number) => {
   let balls = []
@@ -95,7 +96,6 @@ const makeBalls = (number) => {
     let color0 = makeColor()
     let color1 = makeColor()
     let ball = new Ball(i+1, color0, color1)
-    ball.setTimeDelay(i*1000)
     balls.push(ball)
   }
   return balls
@@ -109,7 +109,6 @@ const setTracks = (balls, track) => {
 
 const drawBall = (canvas, ball) => {
   if (!ball.live) { return }
-  console.log('drawing ball ', ball.number)
   canvas.save()
   canvas.beginPath()
   const gradient = canvas.createRadialGradient(ball.x, ball.y, 5, ball.x-5, ball.y-5, ball.radius)
@@ -168,6 +167,7 @@ const render = () => {
 }
 
 
+
 /* --------- BUTTON HANDLERS ----------- */
 
 let animate = null
@@ -184,7 +184,6 @@ stop.addEventListener('click', () => {
 let whichBall = 0
 const add = document.getElementById('add')
 add.addEventListener('click', () => {
-  console.log('added')
   addBall(balls, whichBall)
   whichBall++
 })
