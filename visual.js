@@ -1,7 +1,44 @@
+/* --------- BINS ----------- */
+
+class Bin {
+  constructor (name, capacity, startX, startY, endX, endY) {
+    this.name = name
+    this.capacity = capacity
+    this.startX = startX
+    this.startY = startY
+    this.endX = endX
+    this.endY = endY
+    this.balls = []
+  }
+  
+  addBall (ball) {
+    this.balls.push(ball)
+    ball.stop()
+  }
+  
+  rollOutBall () {
+    let ball = this.balls.pop()
+    ball.start()
+  }
+  
+  emptyBin () {
+    if (this.balls.length === this.capacity) {
+      while(balls[0]) { this.rollOutBall() }
+    }
+  }
+}
+
+
+const makeBins = (tracks) => {
+  tracks.forEach((track) => {
+    let bin = new Bin(track.endX)
+  })
+}
+
 /* --------- TRACKS ----------- */
 
 class Track {
-  constructor(number, startX, startY, endX, endY) {
+  constructor (number, startX, startY, endX, endY) {
     this.number = number
     this.startX = startX
     this.startY = startY
@@ -13,13 +50,15 @@ class Track {
   }
 }
 
-const makeTracks = (width, height, ballRadius, numTracks=4) => {
+const makeTracks = (startX, startY, endX, endY, ballRadius, numTracks=4) => {
+  const width = endX - startX
+  const height = endY - startY
   const ballHeight = ballRadius*2 + 10
   const interval = (height - ballHeight - 10) / numTracks
   let tracks = []
   for (let i=0; i<numTracks; i++) {
-    let startX = (i%2===0) ? width : 0
-    let endX = (startX===0) ? width : 0
+    let startX = (i % 2 === 0) ? width : 0
+    let endX = (startX === 0) ? width : 0
     let track = new Track(i, startX, ballHeight+interval*i, endX, ballHeight+interval*(i+1))
     tracks.push(track)
   }
@@ -69,6 +108,8 @@ class Ball {
     this.slope = track.slope
     this.dY = this.speedIncrement
     this.dX = this.dY*(1/this.slope)
+    this.targetX = track.slope > 0 ? track.endX : track.startX
+    this.targetY = track.endY
   }
 
   start () {
@@ -79,18 +120,6 @@ class Ball {
     this.moving = false
   }
   
-  speedUp () {
-    let newDY = this.dY + this.speedIncrement
-    this.dY = newDY <= 5 ? newDY : 5
-    this.dX = this.dY*(1/this.slope)
-  }
-  
-  slowDown () {
-    let newDY = this.dY - this.speedIncrement
-    this.dY = newDY >= this.speedIncrement ? newDY : speedIncrement
-    this.dX = this.dY*(1/this.slope)
-  }
-  
   makeLive () {
     this.live = true
     this.start()
@@ -98,9 +127,9 @@ class Ball {
 }
 
 const makeColor = () => {
-  let red = Math.floor(Math.random()*200)+50
-  let green = Math.floor(Math.random()*200)+50
-  let blue = Math.floor(Math.random()*200)+50
+  let red = Math.floor(Math.random()*255)
+  let green = Math.floor(Math.random()*255)
+  let blue = Math.floor(Math.random()*255)
   let color = `rgb(${red}, ${green}, ${blue})`
   return { red, green, blue, color }
 }
@@ -147,9 +176,11 @@ const drawBall = (canvas, ball) => {
   canvas.stroke()
   canvas.restore()
   
-  if (ball.x < 0 + ball.radius - 16 || ball.x > field.width - ball.radius + 16) { 
+  if (ball.x < 0 + ball.radius - 16 || ball.x > ball.targetX - ball.radius + 16) { 
     ball.dX = -ball.dX
+    // ball.enterBin()
   }
+  /* NOTE field.height here */
   if (ball.y < 0 + ball.radius || ball.y > field.height - ball.radius) { ball.stop() }
   
   if (ball.moving) { 
@@ -168,14 +199,6 @@ const addBall = (balls, index) => {
   if (balls[index]) { balls[index].makeLive() }
 }
 
-const speedUpBalls = (balls) => {
-  balls.forEach((ball) => { ball.speedUp() })
-}
-
-const slowDownBalls = (balls) => {
-  balls.forEach((ball) => { ball.slowDown() })
-}
-
 
 /* --------- RENDERING ----------- */
 
@@ -185,7 +208,7 @@ field.height = 450 /* window.innerHeight */
 const canvas = field.getContext('2d')
 
 const balls = makeBalls(100)
-const tracks = makeTracks(field.width, field.height, balls[0].radius)
+const tracks = makeTracks(100, 0, field.width-100, field.height, balls[0].radius)
 setTracks(balls, tracks[0])
 
 const render = () => {
@@ -212,18 +235,6 @@ add.addEventListener('click', () => {
   addBall(balls, whichBall)
   whichBall++
 })
-
-/*
-const slower = document.getElementById('slower')
-slower.addEventListener('click', () => {
-  slowDownBalls(balls)
-})
-
-const faster = document.getElementById('faster')
-faster.addEventListener('click', () => {
-  speedUpBalls(balls)
-})
-*/
 
 const stop = document.getElementById('stop')
 stop.addEventListener('click', () => {
