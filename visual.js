@@ -35,6 +35,7 @@ class Ball {
     this.dY = 0
     this.track = null
     this.timeDelay = null
+    this.live = false
     this.moving = false
   }
   
@@ -42,8 +43,8 @@ class Ball {
     this.track = track.number
     this.x = track.startX - this.radius
     this.y = track.startY - this.radius
-    this.dX = 4
-    this.dY = this.dX*track.slope
+    this.dY = .25
+    this.dX = this.dY*(1/track.slope)
   }
   
   setTimeDelay(delay) {
@@ -56,6 +57,11 @@ class Ball {
   
   stop () {
     this.moving = false
+  }
+  
+  makeLive () {
+    this.live = true
+    this.start()
   }
 }
 
@@ -93,7 +99,8 @@ const drawTracks = (canvas, tracks) => {
 }
 
 const drawBall = (canvas, ball) => {
-  if (!ball.moving) { return }
+  if (!ball.live) { return }
+  console.log('drawing ball ', ball.number)
   canvas.save()
   canvas.beginPath()
   const gradient = canvas.createRadialGradient(ball.x, ball.y, 5, ball.x-5, ball.y-5, ball.radius)
@@ -112,17 +119,22 @@ const drawBall = (canvas, ball) => {
   if (ball.x < 0 + ball.radius - 16 || ball.x > field.width - ball.radius + 16) { 
     ball.dX = -ball.dX
   }
-  if (ball.y < 0 + ball.radius || ball.y > field.height - ball.radius) { ball.dY = ball.dX = 0 }
-  ball.x += ball.dX
-  ball.y += ball.dY
+  if (ball.y < 0 + ball.radius || ball.y > field.height - ball.radius) { ball.stop() }
+  
+  if (ball.moving) { 
+    ball.x += ball.dX
+    ball.y += ball.dY
+  }
 }
 
 const drawBalls = (canvas, balls) => {
-  balls.forEach((ball) => { drawBall(canvas, ball) })
+  balls.forEach((ball) => { 
+    drawBall(canvas, ball) 
+  })
 }
 
 const addBall = (balls, index) => {
-  if (balls[index]) { balls[index].start() }
+  if (balls[index]) { balls[index].makeLive() }
 }
 
 // make canvas
@@ -155,9 +167,10 @@ refresh.addEventListener('click', () => {
   clearInterval(animate)
 })
 
-const whichBall = 0
+let whichBall = 0
 const add = document.getElementById('add')
 add.addEventListener('click', () => {
+  console.log('added')
   addBall(balls, whichBall)
   whichBall++
 })
