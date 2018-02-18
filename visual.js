@@ -56,16 +56,19 @@ class Ball {
     this.dX = 0
     this.dY = 0
     this.track = null
+    this.slope = null
     this.live = false
     this.moving = false
+    this.speedIncrement = .25
   }
   
   setTrack(track) {
     this.track = track.number
     this.x = track.startX - this.radius
     this.y = track.startY - this.radius
-    this.dY = .25
-    this.dX = this.dY*(1/track.slope)
+    this.slope = track.slope
+    this.dY = this.speedIncrement
+    this.dX = this.dY*(1/this.slope)
   }
 
   start () {
@@ -74,6 +77,18 @@ class Ball {
   
   stop () {
     this.moving = false
+  }
+  
+  speedUp () {
+    let newDY = this.dY + this.speedIncrement
+    this.dY = newDY <= 5 ? newDY : 5
+    this.dX = this.dY*(1/this.slope)
+  }
+  
+  slowDown () {
+    let newDY = this.dY - this.speedIncrement
+    this.dY = newDY >= this.speedIncrement ? newDY : speedIncrement
+    this.dX = this.dY*(1/this.slope)
   }
   
   makeLive () {
@@ -153,6 +168,13 @@ const addBall = (balls, index) => {
   if (balls[index]) { balls[index].makeLive() }
 }
 
+const speedUpBalls = (balls) => {
+  balls.forEach((ball) => { ball.speedUp() })
+}
+
+const slowDownBalls = (balls) => {
+  balls.forEach((ball) => { ball.slowDown() })
+}
 
 
 /* --------- RENDERING ----------- */
@@ -184,14 +206,26 @@ start.addEventListener('click', () => {
   animate = setInterval(render, 25)
 })
 
-const stop = document.getElementById('stop')
-stop.addEventListener('click', () => {
-  clearInterval(animate)
-})
-
 let whichBall = 0
 const add = document.getElementById('add')
 add.addEventListener('click', () => {
   addBall(balls, whichBall)
   whichBall++
+})
+
+/*
+const slower = document.getElementById('slower')
+slower.addEventListener('click', () => {
+  slowDownBalls(balls)
+})
+
+const faster = document.getElementById('faster')
+faster.addEventListener('click', () => {
+  speedUpBalls(balls)
+})
+*/
+
+const stop = document.getElementById('stop')
+stop.addEventListener('click', () => {
+  clearInterval(animate)
 })
