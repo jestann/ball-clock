@@ -57,13 +57,14 @@ class Bin {
   sendBallHome () {
     let ball = this.balls.pop()
     ball.setNextTrack(this.nextTrack)
-    ball.sendHome()
+    ball.sendingHome()
+    ball.leaveBin()
   }
   
   emptyBin () {
     if (this.balls.length === this.capacity) {
       let firstBall = this.balls.pop()
-      firstBall.setTrack(this.nextTrack)
+      firstBall.setNextTrack(this.nextTrack)
       firstBall.leaveBin()
       while(balls[0]) { this.sendBallHome() }
     }
@@ -216,7 +217,7 @@ class Ball {
     }
   }
 
-  leaveBin (track) {
+  leaveBin () {
     this.leavingBin = true
     this.dY = 0
     this.switch()
@@ -229,10 +230,8 @@ class Ball {
     this.setTrack(this.nextTrack)
   }
   
-  sendHome () {
-    this.inBin = false
+  sendingHome () {
     this.goingHome = true
-    this.start()
   }
   
   gotHome () {
@@ -304,7 +303,7 @@ const drawBall = (canvas, ball) => {
     else if (ball.goingHome) {
       ball.switch()
     } else {
-      ball.enterBin(tracks[ball.track].bin.width)
+      ball.enterBin()
     }
   }
   if (ball.x < ball.binZeroX) {
