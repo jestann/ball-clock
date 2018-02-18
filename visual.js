@@ -15,13 +15,12 @@ class mainBin {
   
   addBall (ball) {
     this.balls.push(ball)
-    ball.gotHome()
+    ball.gotHome(this.track)
     return this.balls.length
   }
   
   releaseBall () {
     let ball = this.balls.shift()
-    ball.setTrack(this.track)
     ball.leaveHome()
     return ball
   }
@@ -180,7 +179,7 @@ class Ball {
     this.goingHome = false
   }
   
-  setTrack(track) {
+  setInitialTrack(track) {
     this.track = track
     this.bin = track.bin
     this.x = track.startX - this.radius
@@ -196,6 +195,24 @@ class Ball {
     this.targetZeroX = zeroX + this.radius - this.offset
     this.targetBigX = bigX - this.radius + this.offset
     this.targetY = track.endY
+  }
+  
+  setNewTrack (track) {
+    this.track = track
+    this.bin = track.bin
+    this.x = track.startX - this.radius
+    this.y = track.startY - this.radius
+    this.slope = track.slope
+    this.dY = this.speedIncrement
+    this.dX = this.dY*(1/this.slope)
+    
+    this.forward = track.slope > 0
+    this.offset = 20
+    let zeroX = this.forward ? track.startX : track.endX
+    let bigX = this.forward ? track.endX : track.startX
+    this.targetZeroX = zeroX + this.radius - this.offset
+    this.targetBigX = bigX - this.radius + this.offset
+    this.targetY = track.endY    
   }
   
   setNextTrack (nextTrack) {
@@ -244,7 +261,7 @@ class Ball {
   startNextTrack () {
     this.inBin = false
     this.leavingBin = false
-    this.setTrack(this.nextTrack)
+    this.setNewTrack(this.nextTrack)
     console.log('starting next track: ', this)
   }
   
@@ -252,15 +269,15 @@ class Ball {
     this.goingHome = true
   }
   
-  gotHome () {
+  gotHome (newTrack) {
     this.inBin = true
     this.goingHome = false
+    this.setNextTrack(newTrack)
     this.stop()
   }
   
   leaveHome () {
-    this.inBin = false
-    this.start()
+    this.startNextTrack()
   }
 }
 
@@ -291,9 +308,9 @@ const makeBalls = (number) => {
   return balls
 }
 
-const setTracks = (balls, track) => {
+const setInitialTracks = (balls, track) => {
   balls.forEach((ball) => { 
-    ball.setTrack(track) 
+    ball.setFirstTrack(track) 
   })
 }
 
@@ -359,7 +376,7 @@ const canvas = field.getContext('2d')
 const balls = makeBalls(100)
 const tracks = makeTracks(field.width, field.height, 300, balls[0].radius)
 const bins = makeBins(tracks, balls[0].radius)
-setTracks(balls, tracks[0])
+setInitialTracks(balls, tracks[0])
 
 const render = () => {
   canvas.beginPath()
