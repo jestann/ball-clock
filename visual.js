@@ -1,3 +1,221 @@
+/* --------- BALLS ----------- */
+
+class Ball {
+  constructor(number, color0='#444', color1='#222') {
+    this.number = number
+    this.color0 = color0
+    this.color1 = color1
+    this.radius = 20
+    this.x = 0
+    this.y = 0
+    this.dX = 0
+    this.dY = 0
+    this.track = null
+    this.slope = null
+    this.live = false
+    this.moving = false
+    this.speedIncrement = .5
+    this.inBin = false
+    this.leavingBin = false
+    this.goingHome = false
+  }
+
+  makeLive () {
+    this.live = true
+    this.tracking = true
+    this.start()
+  }
+  
+  die () {
+    this.stop()
+    this.tracking = false
+    this.live = false
+  }
+
+  start () {
+    this.moving = true
+  }
+  
+  switch () {
+    this.dX = -this.dX
+  }
+  
+  stop () {
+    this.moving = false
+  }
+
+  setNextTrack (nextTrack) {
+    this.nextTrack = nextTrack
+  }
+  
+  setTrack (track) {
+    this.track = track
+    this.bin = track.bin
+    this.nextTrack = track.bin.nextTrack
+    this.x = track.startX
+    this.y = track.startY - this.radius
+    this.slope = track.slope
+    this.dY = this.speedIncrement
+    this.dX = this.dY*(1/this.slope)
+    
+    this.forward = track.slope > 0
+    this.offset = 20
+    let zeroX = this.forward ? track.startX : track.endX
+    let bigX = this.forward ? track.endX : track.startX
+    this.targetZeroX = zeroX /* + this.radius - this.offset */
+    this.targetBigX = bigX /* - this.radius + this.offset */
+  }
+
+  enterBin () {
+    this.numberInBin = this.bin.addBall(this)
+    this.inBin = true
+    
+    this.dY = 0
+    if (this.forward) {
+      this.enteredForward = true
+      this.binFrontX = this.targetBigX
+      console.log('entered bin at: ', this.binFrontX)
+      this.targetBigX = this.bin.backX - this.radius*this.numberInBin
+    } else {
+      this.enteredForward = false
+      this.binFrontX = this.targetZeroX
+      console.log('entered bin at: ', this.binFrontX)
+      this.targetZeroX = this.bin.backX + this.radius*this.numberInBin
+    }
+    
+    this.setNextTrack(this.bin.nextTrack)
+  }
+
+  leaveBin () {
+    this.leavingBin = true
+    this.dY = 0
+    console.log('leaving bin toward ', this.binFrontX)
+    if (this.enteredForward) {
+      this.targetZeroX = this.binFrontX
+      this.targetBigX += 1000 // fix
+    } else {
+      this.targetBigX = this.binFrontX
+      this.targetZeroX -= 1000 // fix
+    }
+    console.log('tz: ', this.targetZeroX, 'tb: ', this.targetBigX)
+    this.switch()
+    this.start()
+  }
+    
+  startNextTrack () {
+    this.inBin = false
+    this.leavingBin = false
+    this.tracking = true
+    this.setTrack(this.nextTrack)
+  }
+  
+  sendHome () {
+    this.goingHome = true
+    this.leaveBin()
+  }
+  
+  gotHome (newTrack) {
+    // this.inBin = true
+    this.goingHome = false
+    this.setNextTrack(newTrack)
+    this.die()
+  }
+  
+  leaveHome () {
+    this.setTrack(this.nextTrack)
+    this.start()
+  }
+}
+
+const drawBall = (canvas, ball) => {
+  if (!ball.live) { return }
+  canvas.save()
+  canvas.beginPath()
+  const gradient = canvas.createRadialGradient(ball.x, ball.y, 5, ball.x-5, ball.y-5, ball.radius)
+  gradient.addColorStop(0, ball.color0)
+  gradient.addColorStop(1, ball.color1)
+  canvas.fillStyle = gradient
+  canvas.arc(ball.x, ball.y, ball.radius, 0+ball.x/ball.radius, 2*Math.PI+ball.x/ball.radius, false)
+  canvas.lineTo(ball.x, ball.y)
+  canvas.fill()
+  canvas.lineWidth = '5'
+  canvas.lineCap = 'round'
+  canvas.strokeStyle = ball.color1
+  canvas.stroke()
+  canvas.restore()
+  
+  if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
+    if (ball.leavingBin) {
+      console.log('STARTING tz: ', ball.targetZeroX, 'tb: ', ball.targetBigX)
+      ball.startNextTrack()
+      console.log()
+    } else if (ball.inBin) {
+      if (ball.moving) {
+        console.log('STOPPED at back of bin: ', ball.x)
+        ball.stop()
+      }
+    } else if (ball.goingHome && !ball.leavingBin) {
+      console.log('HOME SWITCH ', ball.number)
+      ball.switch()
+    } else if (ball.tracking) {
+      console.log('ENTERING bin at: ', ball.x, 'tz: ', ball.targetZeroX, 'tb: ', ball.targetBigX)
+      ball.enterBin()
+    }
+  }
+  
+  /* NOTE field.height here */
+  if (ball.y > field.height - ball.radius) { ball.stop() }
+  
+  if (ball.moving) { 
+    ball.x += ball.dX
+    ball.y += ball.dY
+  }
+}
+
+const makeColor = () => {
+  let red = Math.floor(Math.random()*255)
+  let green = Math.floor(Math.random()*255)
+  let blue = Math.floor(Math.random()*255)
+  let color = `rgb(${red}, ${green}, ${blue})`
+  return { red, green, blue, color }
+}
+
+const darken = (color) => {
+  let red = Math.floor(color.red*.5)
+  let green = Math.floor(color.green*.5)
+  let blue = Math.floor(color.blue*.5)
+  let darker = `rgb(${red}, ${green}, ${blue})`
+  return { red, green, blue, color: darker }
+}
+
+const makeBalls = (number) => {
+  let balls = []
+  for (let i = 0; i < number; i++) {
+    let color0 = makeColor()
+    let color1 = darken(color0)
+    let ball = new Ball(i+1, color0.color, color1.color)
+    balls.push(ball)
+  }
+  return balls
+}
+
+const setTracks = (balls, track) => {
+  balls.forEach((ball) => { 
+    ball.setTrack(track) 
+  })
+}
+
+const drawBalls = (canvas, balls) => {
+  for (let i=balls.length-1; i>=0; i--) {
+    drawBall(canvas, balls[i]) 
+  }
+}
+
+const addBall = (balls, index) => {
+  if (balls[index]) { balls[index].makeLive() }
+}
+
+
 /* --------- BINS ----------- */
 
 class mainBin {
@@ -51,8 +269,6 @@ class Bin {
     this.renderY = this.enterY - this.height
     this.backX = this.forward ? this.renderX + this.width : this.renderX
     this.backY = this.enterY
-    
-    // this.binTrack = new Track(this.backX, this.backY, this.enterX, this.enterY)
   }
   
   addBall (ball) {
@@ -62,18 +278,29 @@ class Bin {
   
   sendBallHome () {
     let ball = this.balls.pop()
-    ball.setNextTrack(this.nextTrack)
-    ball.sendingHome()
-    ball.leaveBin()
+    ball.sendHome()
   }
   
   empty () {
     if (!this.balls[0]) { return }
     let firstBall = this.balls.pop()
-    firstBall.setNextTrack(this.nextTrack)
     firstBall.leaveBin()
     while (this.balls[0]) { this.sendBallHome() }
   }
+}
+
+const drawBin = (canvas, bin) => {
+  canvas.beginPath()
+  canvas.lineWidth = '8'
+  canvas.lineCap = 'round'
+  canvas.strokeStyle = '#999'
+  canvas.strokeRect(bin.renderX, bin.renderY, bin.width, bin.height)
+}
+
+const drawBins = (canvas, bins) => {
+  drawBin(canvas, bins.min)
+  drawBin(canvas, bins.fiveMin)
+  drawBin(canvas, bins.hour)
 }
 
 const makeBins = (tracks, ballRadius) => {
@@ -94,21 +321,6 @@ const emptyBins = (bins) => {
   }
 }
 
-const drawBin = (canvas, bin) => {
-  canvas.beginPath()
-  canvas.lineWidth = '8'
-  canvas.lineCap = 'round'
-  canvas.strokeStyle = '#999'
-  canvas.strokeRect(bin.renderX, bin.renderY, bin.width, bin.height)
-}
-
-const drawBins = (canvas, bins) => {
-  drawBin(canvas, bins.min)
-  drawBin(canvas, bins.fiveMin)
-  drawBin(canvas, bins.hour)
-}
-
-
 
 /* --------- TRACKS ----------- */
 
@@ -122,6 +334,7 @@ class Track {
     this.rise = this.endY - this.startY
     this.run = this.endX - this.startX
     this.slope = this.rise/this.run
+    this.bin = null
   }
 }
 
@@ -157,214 +370,6 @@ const drawTracks = (canvas, tracks) => {
 }
 
 
-/* --------- BALLS ----------- */
-
-class Ball {
-  constructor(number, color0='#444', color1='#222') {
-    this.number = number
-    this.color0 = color0
-    this.color1 = color1
-    this.radius = 20
-    this.x = 0
-    this.y = 0
-    this.dX = 0
-    this.dY = 0
-    this.track = null
-    this.slope = null
-    this.live = false
-    this.moving = false
-    this.speedIncrement = .5
-    this.inBin = false
-    this.leavingBin = false
-    this.goingHome = false
-  }
-  
-  setInitialTrack(track) {
-    this.track = track
-    this.bin = track.bin
-    this.x = track.startX - this.radius
-    this.y = track.startY - this.radius
-    this.slope = track.slope
-    this.dY = this.speedIncrement
-    this.dX = this.dY*(1/this.slope)
-    
-    this.forward = track.slope > 0
-    this.offset = 20
-    let zeroX = this.forward ? track.startX : track.endX
-    let bigX = this.forward ? track.endX : track.startX
-    this.targetZeroX = zeroX + this.radius - this.offset
-    this.targetBigX = bigX - this.radius + this.offset
-    this.targetY = track.endY
-  }
-  
-  setNewTrack (track) {
-    this.track = track
-    this.bin = track.bin
-    this.x = track.startX - this.radius
-    this.y = track.startY - this.radius
-    this.slope = track.slope
-    this.dY = this.speedIncrement
-    this.dX = this.dY*(1/this.slope)
-    
-    this.forward = track.slope > 0
-    this.offset = 20
-    let zeroX = this.forward ? track.startX : track.endX
-    let bigX = this.forward ? track.endX : track.startX
-    this.targetZeroX = zeroX + this.radius - this.offset
-    this.targetBigX = bigX - this.radius + this.offset
-    this.targetY = track.endY    
-  }
-  
-  setNextTrack (nextTrack) {
-    this.nextTrack = nextTrack
-  }
-
-  start () {
-    this.moving = true
-  }
-  
-  switch () {
-    this.dX = -this.dX
-  }
-  
-  stop () {
-    this.moving = false
-  }
-  
-  makeLive () {
-    this.live = true
-    this.start()
-  }
-  
-  enterBin () {
-    this.numberInBin = this.bin.addBall(this)
-    this.inBin = true
-    this.dY = 0
-    if (this.forward) {
-      this.binFrontX = this.targetBigX
-      this.targetBigX = this.bin.backX - this.radius*this.numberInBin
-    } else {
-      this.binFrontX = this.targetZeroX
-      this.targetZeroX = this.bin.backX + this.radius*this.numberInBin
-      /* need to add shift for more balls */
-    }
-  }
-
-  leaveBin () {
-    this.leavingBin = true
-    if (this.forward) { this.targetBigX = this.binFrontX }
-    else { this.targetZeroX = this.binFrontX }
-    this.dY = 0
-    this.start()
-  }
-  
-  startNextTrack () {
-    this.inBin = false
-    this.leavingBin = false
-    this.setNewTrack(this.nextTrack)
-    console.log('starting next track: ', this)
-  }
-  
-  sendingHome () {
-    this.goingHome = true
-  }
-  
-  gotHome (newTrack) {
-    this.inBin = true
-    this.goingHome = false
-    this.setNextTrack(newTrack)
-    this.stop()
-  }
-  
-  leaveHome () {
-    this.startNextTrack()
-  }
-}
-
-const makeColor = () => {
-  let red = Math.floor(Math.random()*255)
-  let green = Math.floor(Math.random()*255)
-  let blue = Math.floor(Math.random()*255)
-  let color = `rgb(${red}, ${green}, ${blue})`
-  return { red, green, blue, color }
-}
-
-const darken = (color) => {
-  let red = Math.floor(color.red*.5)
-  let green = Math.floor(color.green*.5)
-  let blue = Math.floor(color.blue*.5)
-  let darker = `rgb(${red}, ${green}, ${blue})`
-  return { red, green, blue, color: darker }
-}
-
-const makeBalls = (number) => {
-  let balls = []
-  for (let i = 0; i < number; i++) {
-    let color0 = makeColor()
-    let color1 = darken(color0)
-    let ball = new Ball(i+1, color0.color, color1.color)
-    balls.push(ball)
-  }
-  return balls
-}
-
-const setInitialTracks = (balls, track) => {
-  balls.forEach((ball) => { 
-    ball.setFirstTrack(track) 
-  })
-}
-
-const drawBall = (canvas, ball) => {
-  if (!ball.live) { return }
-  canvas.save()
-  canvas.beginPath()
-  const gradient = canvas.createRadialGradient(ball.x, ball.y, 5, ball.x-5, ball.y-5, ball.radius)
-  gradient.addColorStop(0, ball.color0)
-  gradient.addColorStop(1, ball.color1)
-  canvas.fillStyle = gradient
-  canvas.arc(ball.x, ball.y, ball.radius, 0+ball.x/ball.radius, 2*Math.PI+ball.x/ball.radius, false)
-  canvas.lineTo(ball.x, ball.y)
-  canvas.fill()
-  canvas.lineWidth = '5'
-  canvas.lineCap = 'round'
-  canvas.strokeStyle = ball.color1
-  canvas.stroke()
-  canvas.restore()
-  
-  if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
-    if (ball.leavingBin) {
-      console.log('hit target, in bin: ', ball.inBin)
-      ball.startNextTrack()
-    }
-    else if (ball.inBin) {
-      ball.stop()
-    }
-    else if (ball.goingHome) {
-      ball.switch()
-    } else {
-      ball.enterBin()
-    }
-  }
-  
-  /* NOTE field.height here */
-  if (ball.y > field.height - ball.radius) { ball.stop() }
-  
-  if (ball.moving) { 
-    ball.x += ball.dX
-    ball.y += ball.dY
-  }
-}
-
-const drawBalls = (canvas, balls) => {
-  for (let i=balls.length-1; i>=0; i--) {
-    drawBall(canvas, balls[i]) 
-  }
-}
-
-const addBall = (balls, index) => {
-  if (balls[index]) { balls[index].makeLive() }
-}
-
 
 /* --------- RENDERING ----------- */
 
@@ -376,7 +381,7 @@ const canvas = field.getContext('2d')
 const balls = makeBalls(100)
 const tracks = makeTracks(field.width, field.height, 300, balls[0].radius)
 const bins = makeBins(tracks, balls[0].radius)
-setInitialTracks(balls, tracks[0])
+setTracks(balls, tracks[0])
 
 const render = () => {
   canvas.beginPath()
