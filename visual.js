@@ -2,8 +2,9 @@
 
 class mainBin {
   constructor (track, balls=null) {
-    this.balls = balls ? balls : []
+    this.name = 'main'
     this.track = track
+    this.balls = balls ? balls : []
     if (balls) { this.capacity = balls.length }
   } 
   
@@ -15,6 +16,7 @@ class mainBin {
   addBall (ball) {
     this.balls.push(ball)
     ball.gotHome()
+    return this.balls.length
   }
   
   releaseBall () {
@@ -22,6 +24,10 @@ class mainBin {
     ball.setTrack(this.track)
     ball.leaveHome()
     return ball
+  }
+  
+  empty () {
+    // do nothing
   }
 }
 
@@ -52,6 +58,7 @@ class Bin {
   
   addBall (ball) {
     this.balls.push(ball)
+    return this.balls.length
   }
   
   sendBallHome () {
@@ -61,13 +68,12 @@ class Bin {
     ball.leaveBin()
   }
   
-  emptyBin () {
-    if (this.balls.length === this.capacity) {
-      let firstBall = this.balls.pop()
-      firstBall.setNextTrack(this.nextTrack)
-      firstBall.leaveBin()
-      while(balls[0]) { this.sendBallHome() }
-    }
+  empty () {
+    if (!this.balls[0]) { return }
+    let firstBall = this.balls.pop()
+    firstBall.setNextTrack(this.nextTrack)
+    firstBall.leaveBin()
+    while (this.balls[0]) { this.sendBallHome() }
   }
 }
 
@@ -78,9 +84,15 @@ const makeBins = (tracks, ballRadius) => {
   tracks[1].bin = fiveMin
   let hour = new Bin('hour', 12, tracks[2], tracks[3], ballRadius)
   tracks[2].bin = hour
-  let main = new mainBin()
+  let main = new mainBin(tracks[0])
   tracks[3].bin = main
   return { min, fiveMin, hour, main }
+}
+
+const emptyBins = (bins) => {
+  for (let name in bins) {
+    bins[name].empty()
+  }
 }
 
 const drawBin = (canvas, bin) => {
@@ -178,10 +190,11 @@ class Ball {
     this.dX = this.dY*(1/this.slope)
     
     this.forward = track.slope > 0
+    this.offset = 20
     let zeroX = this.forward ? track.startX : track.endX
     let bigX = this.forward ? track.endX : track.startX
-    this.targetZeroX = zeroX + this.radius - 20
-    this.targetBigX = bigX - this.radius + 20
+    this.targetZeroX = zeroX + this.radius - this.offset
+    this.targetBigX = bigX - this.radius + this.offset
     this.targetY = track.endY
   }
   
@@ -207,14 +220,15 @@ class Ball {
   }
   
   enterBin () {
+    this.numberInBin = this.bin.addBall(this)
     this.inBin = true
     this.dY = 0
     if (this.forward) {
       this.binFrontX = this.targetBigX
-      this.targetBigX = this.bin.backX - this.radius
+      this.targetBigX = this.bin.backX - this.radius*this.numberInBin
     } else {
       this.binFrontX = this.targetZeroX
-      this.targetZeroX = this.bin.backX + this.radius
+      this.targetZeroX = this.bin.backX + this.radius*this.numberInBin
       /* need to add shift for more balls */
     }
   }
@@ -224,7 +238,6 @@ class Ball {
     if (this.forward) { this.targetBigX = this.binFrontX }
     else { this.targetZeroX = this.binFrontX }
     this.dY = 0
-    this.switch()
     this.start()
   }
   
@@ -232,6 +245,7 @@ class Ball {
     this.inBin = false
     this.leavingBin = false
     this.setTrack(this.nextTrack)
+    console.log('starting next track: ', this)
   }
   
   sendingHome () {
@@ -300,9 +314,9 @@ const drawBall = (canvas, ball) => {
   canvas.stroke()
   canvas.restore()
   
-  console.log(ball.targetZeroX)
   if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
     if (ball.leavingBin) {
+      console.log('hit target, in bin: ', ball.inBin)
       ball.startNextTrack()
     }
     else if (ball.inBin) {
@@ -371,6 +385,11 @@ const add = document.getElementById('add')
 add.addEventListener('click', () => {
   addBall(balls, whichBall)
   whichBall++
+})
+
+const empty = document.getElementById('empty')
+empty.addEventListener('click', () => {
+  emptyBins(bins)
 })
 
 const stop = document.getElementById('stop')
