@@ -67,8 +67,8 @@ class Ball {
   }
 
   enterBin () {
-    this.numberInBin = this.bin.addBall(this)
-    this.inBin = true
+    let roomLeft = this.bin.addBall(this)
+    this.numberInBin = roomLeft ? roomLeft : null
     
     this.dY = 0
     if (this.forward) {
@@ -272,6 +272,11 @@ class Bin {
   }
   
   addBall (ball) {
+    if (this.balls.length === this.capacity) {
+      console.log('EMPTY ', this.balls.length, ' in ', this.capacity)
+      this.empty()
+      return false
+    }
     this.balls.push(ball)
     return this.balls.length
   }
@@ -409,9 +414,19 @@ add.addEventListener('click', () => {
   whichBall++
 })
 
-const empty = document.getElementById('empty')
-empty.addEventListener('click', () => {
-  emptyBins(bins)
+const min = document.getElementById('min')
+min.addEventListener('click', () => {
+  bins.min.empty()
+})
+
+const five = document.getElementById('five')
+five.addEventListener('click', () => {
+  bins.five.empty()
+})
+
+const hour = document.getElementById('hour')
+five.addEventListener('click', () => {
+  bins.hour.empty()
 })
 
 const stop = document.getElementById('stop')
