@@ -40,7 +40,7 @@ class Bin {
     this.width = ballRadius*2 * this.maxCapacity + 2*this.offset
     this.increment = this.width / this.capacity
        
-    this.enterX = this.forward ? track.endX + this.offset : this.enterX - this.offset
+    this.enterX = this.forward ? track.endX + this.offset : track.endX - this.offset
     this.enterY = track.endY
     this.renderX = this.forward ? this.enterX : this.enterX - this.width
     this.renderY = this.enterY - this.height
@@ -210,8 +210,10 @@ class Ball {
     this.inBin = true
     this.dY = 0
     if (this.forward) {
+      this.binFrontX = this.targetBigX
       this.targetBigX = this.bin.backX
     } else {
+      this.binFrontX = this.targetZeroX
       this.targetZeroX = this.bin.backX
       /* need to add shift for more balls */
     }
@@ -219,6 +221,8 @@ class Ball {
 
   leaveBin () {
     this.leavingBin = true
+    if (this.forward) { this.targetBigX = this.binFrontX }
+    else { this.targetZeroX = this.binFrontX }
     this.dY = 0
     this.switch()
     this.start()
@@ -296,9 +300,13 @@ const drawBall = (canvas, ball) => {
   canvas.stroke()
   canvas.restore()
   
+  console.log(ball.targetZeroX)
   if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
     if (ball.leavingBin) {
       ball.startNextTrack()
+    }
+    else if (ball.inBin) {
+      ball.stop()
     }
     else if (ball.goingHome) {
       ball.switch()
@@ -306,9 +314,6 @@ const drawBall = (canvas, ball) => {
       ball.enterBin()
     }
   }
-  if (ball.x < ball.binZeroX) {
-    ball.stop()
-  }
   
   /* NOTE field.height here */
   if (ball.y > field.height - ball.radius) { ball.stop() }
@@ -339,8 +344,8 @@ const canvas = field.getContext('2d')
 
 const balls = makeBalls(100)
 const tracks = makeTracks(field.width, field.height, 300, balls[0].radius)
-setTracks(balls, tracks[0])
 const bins = makeBins(tracks, balls[0].radius)
+setTracks(balls, tracks[0])
 
 const render = () => {
   canvas.beginPath()
