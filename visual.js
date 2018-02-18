@@ -144,9 +144,9 @@ const drawBall = (canvas, ball) => {
 }
 
 const drawBalls = (canvas, balls) => {
-  balls.forEach((ball) => { 
-    drawBall(canvas, ball) 
-  })
+  for (let i=balls.length-1; i>=0; i--) {
+    drawBall(canvas, balls[i]) 
+  }
 }
 
 const addBall = (balls, index) => {
