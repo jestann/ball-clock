@@ -57,9 +57,9 @@ const makeTracks = (startX, startY, endX, endY, ballRadius, numTracks=4) => {
   const interval = (height - ballHeight - 10) / numTracks
   let tracks = []
   for (let i=0; i<numTracks; i++) {
-    let startX = (i % 2 === 0) ? width : 0
-    let endX = (startX === 0) ? width : 0
-    let track = new Track(i, startX, ballHeight+interval*i, endX, ballHeight+interval*(i+1))
+    let firstX = (i % 2 === 0) ? startX + width : startX
+    let lastX = (firstX === startX) ? startX + width : startX
+    let track = new Track(i, firstX, ballHeight+interval*i, lastX, ballHeight+interval*(i+1))
     tracks.push(track)
   }
   return tracks
@@ -108,7 +108,12 @@ class Ball {
     this.slope = track.slope
     this.dY = this.speedIncrement
     this.dX = this.dY*(1/this.slope)
-    this.targetX = track.slope > 0 ? track.endX : track.startX
+    
+    let forward = track.slope > 0 ? true : false
+    let zeroX = forward ? track.startX : track.endX
+    let bigX = forward ? track.endX : track.startX
+    this.targetZeroX = zeroX + this.radius - 16
+    this.targetBigX = bigX - this.radius + 16
     this.targetY = track.endY
   }
 
@@ -176,12 +181,12 @@ const drawBall = (canvas, ball) => {
   canvas.stroke()
   canvas.restore()
   
-  if (ball.x < 0 + ball.radius - 16 || ball.x > ball.targetX - ball.radius + 16) { 
+  if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
     ball.dX = -ball.dX
     // ball.enterBin()
   }
   /* NOTE field.height here */
-  if (ball.y < 0 + ball.radius || ball.y > field.height - ball.radius) { ball.stop() }
+  if (ball.y > field.height - ball.radius) { ball.stop() }
   
   if (ball.moving) { 
     ball.x += ball.dX
