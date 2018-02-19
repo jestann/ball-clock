@@ -1,6 +1,8 @@
-## Task: Create a ball clock.
+## So ... you want to build a ball clock.
 
-## Operation.
+_Task: Build a functioning simulation of a ball clock using Javascript._
+
+### Operation.
 
 Every minute, the least recently used ball is removed from the queue of balls at the bottom of
 the clock, elevated, then deposited on the minute indicator track, which is able to hold four
@@ -23,7 +25,7 @@ balls eventually begin to repeat. Your program must compute the time before repe
 varies according to the total number of balls present.
 
 
-## Implementation.
+### Implementation.
 
 Valid numbers of balls are in the range 27 to 127. Ball inputs outside of this range should
 produce an error message. Clocks must support two modes of computation. Each mode is
@@ -32,32 +34,35 @@ should indicate the amount of time (in both milliseconds and seconds) it took fo
 complete that run.
 
 
-### Mode 1 (Cycle Days)
+#### Mode 1 (Cycle Days)
 
 The first mode takes a single parameter specifying the number of balls and reports the number
 of balls given in the input and the number of days (24-hour periods) which elapse before the
 clock returns to its initial ordering.
 
-#### An input of 30 yields the following output:
+##### An input of 30 yields the following output:
+
 ```
 30 balls cycle after 15 days.
 Completed in x milliseconds (y.yyy seconds)
 ```
 
-#### An input of 45 yields the following output:
+##### An input of 45 yields the following output:
+
 ```
 45 balls cycle after 378 days.
 Completed in x milliseconds (y.yyy seconds)
 ```
 
 
-### Mode 2 (Clock State)
+#### Mode 2 (Clock State)
 
 The second mode takes two parameters, the number of balls and the number of minutes to run
 for. If the number of minutes is specified, the clock must run to the number of minutes and
 report the state of the tracks at that point in a JSON format.
 
-#### An input of 30 325 yields the following output:
+##### An input of 30 325 yields the following output:
+
 ```
 {"Min":[],"FiveMin":[22,13,25,3,7],"Hour":[6,12,17,4,15],"Main"
 [11,5,26,18,2,30,19,8,24,10,29,20,16,21,28,1,23,14,27,9]}
