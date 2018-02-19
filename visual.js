@@ -564,15 +564,12 @@ const addMinute = () = {
 let clock = null;
 const start = document.getElementById('start')
 start.addEventListener('click', () => {
-  clock = setInterval(() => {
-    let ball = 
-  }, 25)
+  clock = setInterval(addMinute, 10000)
 })
 
 const minTracker = document.getElementById('minute')
 const add = document.getElementById('add')
-add.addEventListener('click', () => {
-})
+add.addEventListener('click', addMinute)
 
 const array = document.getElementById('array')
 array.addEventListener('click', () => {
