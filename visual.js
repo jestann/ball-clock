@@ -26,6 +26,10 @@ class Ball {
     this.start()
   }
   
+  makeVisible () {
+    this.mainBinning = true
+  }
+  
   die () {
     this.stop()
     this.tracking = false
@@ -42,6 +46,11 @@ class Ball {
   
   stop () {
     this.moving = false
+  }
+  
+  setLocation (x, y) {
+    this.x = x
+    this.y = y
   }
   
   setHome (homeBin) {
@@ -132,8 +141,8 @@ class Ball {
   }
   
   gotHome () {
-    // this.inBin = true
     this.goingHome = false
+    // this.mainBinning = true
     this.homeBin.addBall(this)
     this.setTrack(this.startTrack)
     this.die()
@@ -141,12 +150,14 @@ class Ball {
   
   leaveHome () {
     console.log('LEAVING HOME ', this.number)
+    this.mainBinning = false
     this.makeLive()
   }
 }
 
 const drawBall = (canvas, ball) => {
-  if (!ball.live) { return }
+  if (!ball.live && !ball.mainBinning) { return }
+  
   canvas.save()
   canvas.beginPath()
   const gradient = canvas.createRadialGradient(ball.x, ball.y, 5, ball.x-5, ball.y-5, ball.radius)
@@ -168,6 +179,8 @@ const drawBall = (canvas, ball) => {
   canvas.textAlign = 'center'
   canvas.fillStyle = 'white'
   canvas.fillText(ball.number, ball.x, ball.y)
+  
+  if (!ball.live && ball.mainBinning) { return }
   
   if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
     if (ball.leavingBin) {
@@ -253,23 +266,42 @@ const startBall = (balls, index) => {
 /* --------- BINS ----------- */
 
 class mainBin {
-  constructor (track, balls=null) {
+  constructor (capacity, tracks, ballRadius) {
     this.name = 'main'
-    this.track = track
-    this.balls = balls ? balls : []
-    if (balls) { this.capacity = balls.length }
+    this.track = tracks[0]
+    this.capacity = capacity
+    this.balls = []
+    
+    let startX = tracks[0].startX
+    let endX = tracks[0].endX
+    let bigger = startX > endX ? startX : endX
+    let smaller = startX > endX ? endX : startX
+    let xPadding = 75
+    let binStartX = smaller - xPadding
+    let binEndX = bigger + xPadding
+    this.renderX = binStartX
+    this.width = binEndX - binStartX
+    
+    let endY = tracks[tracks.length - 1].endY
+    let yPadding = 50
+    let binStartY = endY + yPadding
+    this.renderY = binStartY
+    
+    this.offset = 5
+    this.height = ballRadius*2 + 4*this.offset
+    this.increment = this.width / this.capacity
   } 
-  
-  setHome (track) {
-    this.homeX = track.endX
-    this.homeY = track.endY
-  }
-  
+    
   setBalls (balls) {
     this.capacity = balls.length
     balls.forEach((ball) => { this.balls.push(ball) })
   }
-  
+
+  setHome (track) {
+    this.homeX = track.endX
+    this.homeY = track.endY
+  }
+
   addBall (ball) {
     this.balls.push(ball)
     return this.balls.length
@@ -353,6 +385,22 @@ const drawBins = (canvas, bins) => {
   drawBin(canvas, bins.hour)
 }
 
+const drawMainBin = (canvas, bin) => {
+  canvas.beginPath()
+  canvas.lineWidth = '8'
+  canvas.lineCap = 'round'
+  canvas.strokeStyle = '#999'
+  canvas.strokeRect(bin.renderX, bin.renderY, bin.width, bin.height)
+  
+  for (let i=1; i <= bin.balls.length; i++) {
+    let ball = bin.balls[i] 
+    let ballX = bin.renderX + bin.increment*i
+    let ballY = bin.renderY + ball.radius
+    ball.setLocation(ballX, ballY)
+    ball.makeVisible() 
+  }
+}
+
 const makeBins = (tracks, ballRadius) => {
   let min = new Bin('min', 5, tracks[0], tracks[1], ballRadius)
   tracks[0].bin = min
@@ -360,7 +408,7 @@ const makeBins = (tracks, ballRadius) => {
   tracks[1].bin = fiveMin
   let hour = new Bin('hour', 12, tracks[2], tracks[3], ballRadius)
   tracks[2].bin = hour
-  let main = new mainBin(tracks[0])
+  let main = new mainBin('main', 100, tracks, ballRadius)
   tracks[3].bin = main
   main.setHome(tracks[3])
   return { min, fiveMin, hour, main }
@@ -389,11 +437,11 @@ class Track {
   }
 }
 
-const makeTracks = (width, height, marginX, ballRadius, numTracks=4) => {
+const makeTracks = (width, height, marginX, marginBottom, ballRadius, numTracks=4) => {
   const firstX = marginX
   const lastX = width - marginX
   const ballHeight = ballRadius*2 + 10
-  const interval = (height - ballHeight - 10) / numTracks
+  const interval = (height - ballHeight - marginBottom) / numTracks
   let tracks = []
   for (let i = 0; i < numTracks; i++) {
     let startX = (i % 2 === 0) ? lastX : firstX
@@ -426,11 +474,11 @@ const drawTracks = (canvas, tracks) => {
 
 const field = document.getElementById('canvas')
 field.width = 1300 /* window.innerWidth */
-field.height = 500 /* window.innerHeight */
+field.height = 600 /* window.innerHeight */
 const canvas = field.getContext('2d')
 
 const balls = makeBalls(100)
-const tracks = makeTracks(field.width, field.height, 300, balls[0].radius)
+const tracks = makeTracks(field.width, field.height, 300, 100, balls[0].radius)
 const bins = makeBins(tracks, balls[0].radius)
 setTracks(balls, tracks[0])
 setHome(balls, bins.main)
