@@ -1,3 +1,7 @@
+/* --------- DESIGNED BY JESS BIRD 2018 ----------- */
+
+/* This ought to be in segregated files; however, it was developed in a visual sandbox that required a single file and copied over. */
+
 /* --------- BALLS ----------- */
 
 class Ball {
@@ -154,6 +158,47 @@ class Ball {
   }
 }
 
+const makeColor = () => {
+  let red = Math.floor(Math.random()*255)
+  let green = Math.floor(Math.random()*255)
+  let blue = Math.floor(Math.random()*255)
+  let color = `rgb(${red}, ${green}, ${blue})`
+  return { red, green, blue, color }
+}
+
+const darken = (color) => {
+  let red = Math.floor(color.red*.5)
+  let green = Math.floor(color.green*.5)
+  let blue = Math.floor(color.blue*.5)
+  let darker = `rgb(${red}, ${green}, ${blue})`
+  return { red, green, blue, color: darker }
+}
+
+const makeBalls = (number) => {
+  let balls = []
+  for (let i = 0; i < number; i++) {
+    let color0 = makeColor()
+    let color1 = darken(color0)
+    let ball = new Ball(i+1, color0.color, color1.color)
+    balls.push(ball)
+  }
+  return balls
+}
+
+const setTracks = (balls, track) => {
+  balls.forEach((ball) => { 
+    ball.setTrack(track) 
+    ball.setStartTrack(track)
+  })
+}
+
+const setHome = (balls, homeBin) => {
+  balls.forEach((ball) => { ball.setHome(homeBin) })
+}
+
+
+/* --------- DRAWING BALLS ----------- */
+
 const drawBall = (canvas, ball) => {
   if (!ball.live) { return }
   
@@ -213,7 +258,7 @@ const drawBinBall = (canvas, ball, bin, i) => {
   
   let increment = (bin.width - ball.radius*2) / bin.balls.length
   let ballX = bin.renderX + increment*(i+1)
-  let ballY = bin.renderY + ball.radius + 5
+  let ballY = bin.renderY + ball.radius + 15
   ball.setLocation(ballX, ballY)
 
   canvas.save()
@@ -237,44 +282,6 @@ const drawBinBall = (canvas, ball, bin, i) => {
   canvas.textAlign = 'center'
   canvas.fillStyle = 'white'
   canvas.fillText(ball.number, ball.x, ball.y)  
-}
-
-const makeColor = () => {
-  let red = Math.floor(Math.random()*255)
-  let green = Math.floor(Math.random()*255)
-  let blue = Math.floor(Math.random()*255)
-  let color = `rgb(${red}, ${green}, ${blue})`
-  return { red, green, blue, color }
-}
-
-const darken = (color) => {
-  let red = Math.floor(color.red*.5)
-  let green = Math.floor(color.green*.5)
-  let blue = Math.floor(color.blue*.5)
-  let darker = `rgb(${red}, ${green}, ${blue})`
-  return { red, green, blue, color: darker }
-}
-
-const makeBalls = (number) => {
-  let balls = []
-  for (let i = 0; i < number; i++) {
-    let color0 = makeColor()
-    let color1 = darken(color0)
-    let ball = new Ball(i+1, color0.color, color1.color)
-    balls.push(ball)
-  }
-  return balls
-}
-
-const setTracks = (balls, track) => {
-  balls.forEach((ball) => { 
-    ball.setTrack(track) 
-    ball.setStartTrack(track)
-  })
-}
-
-const setHome = (balls, homeBin) => {
-  balls.forEach((ball) => { ball.setHome(homeBin) })
 }
 
 const drawBalls = (canvas, balls) => {
@@ -310,7 +317,7 @@ class mainBin {
     this.width = binEndX - binStartX
     
     let endY = tracks[tracks.length - 1].endY
-    let yPadding = 50
+    let yPadding = 25
     let binStartY = endY + yPadding
     this.renderY = binStartY
     
@@ -335,8 +342,10 @@ class mainBin {
   }
   
   releaseBall () {
-    let ball = this.balls.shift()
-    return ball
+    if (this.balls[0]) {
+      let ball = this.balls.shift()
+      return ball
+    } else { return null }
   }
   
   empty () {
@@ -398,6 +407,28 @@ class Bin {
   }
 }
 
+const makeBins = (tracks, ballRadius) => {
+  let min = new Bin('min', 5, tracks[0], tracks[1], ballRadius)
+  tracks[0].bin = min
+  let fiveMin = new Bin('fiveMin', 12, tracks[1], tracks[2], ballRadius)
+  tracks[1].bin = fiveMin
+  let hour = new Bin('hour', 12, tracks[2], tracks[3], ballRadius)
+  tracks[2].bin = hour
+  let main = new mainBin(100, tracks, ballRadius)
+  tracks[3].bin = main
+  main.setHome(tracks[3])
+  return { min, fiveMin, hour, main }
+}
+
+const emptyBins = (bins) => {
+  for (let name in bins) {
+    bins[name].empty()
+  }
+}
+
+
+/* --------- DRAWING BINS ----------- */
+
 const drawBin = (canvas, bin) => {
   canvas.beginPath()
   canvas.lineWidth = '8'
@@ -420,28 +451,10 @@ const drawMainBin = (canvas, bin) => {
   canvas.strokeRect(bin.renderX, bin.renderY, bin.width, bin.height)
 }
 
-const makeBins = (tracks, ballRadius) => {
-  let min = new Bin('min', 5, tracks[0], tracks[1], ballRadius)
-  tracks[0].bin = min
-  let fiveMin = new Bin('fiveMin', 12, tracks[1], tracks[2], ballRadius)
-  tracks[1].bin = fiveMin
-  let hour = new Bin('hour', 12, tracks[2], tracks[3], ballRadius)
-  tracks[2].bin = hour
-  let main = new mainBin(100, tracks, ballRadius)
-  tracks[3].bin = main
-  main.setHome(tracks[3])
-  return { min, fiveMin, hour, main }
-}
-
-const emptyBins = (bins) => {
-  for (let name in bins) {
-    bins[name].empty()
-  }
-}
-
 const drawArray = (canvas, bin) => {
   let startX = bin.renderX + 10
   let startY = bin.renderY - 20
+  if (bin.name === 'fiveMin') { startX = bin.renderX + bin.width - 10 }
   let length = bin.balls.length
   
   let array = []
@@ -460,7 +473,8 @@ const drawArray = (canvas, bin) => {
   canvas.font = '18px sans-serif'
   canvas.textBaseline = 'middle'
   canvas.textAlign = 'left'
-  canvas.fillStyle = 'black'
+  if (bin.name === 'fiveMin') { canvas.textAlign = 'right' }
+  canvas.fillStyle = 'white'
   canvas.fillText(string, startX, startY)
 }
 
@@ -503,6 +517,10 @@ const makeTracks = (width, height, marginX, marginBottom, ballRadius, numTracks=
   return tracks
 }
 
+
+
+/* --------- DRAWING TRACKS ----------- */
+
 const drawTrack = (canvas, track) => {
   canvas.beginPath()
   canvas.moveTo(track.startX, track.startY)
@@ -520,15 +538,15 @@ const drawTracks = (canvas, tracks) => {
 }
 
 
-
-/* --------- RENDERING ----------- */
+/* --------- INITIALIZE & RENDERING ----------- */
 
 const field = document.getElementById('canvas')
-field.width = 1300 /* window.innerWidth */
-field.height = 500 /* window.innerHeight */
+field.width = window.innerWidth - 10
+field.height = window.innerHeight - 125
 const canvas = field.getContext('2d')
 
-const balls = makeBalls(45)
+let numBalls = 27
+const balls = makeBalls(numBalls)
 const tracks = makeTracks(field.width, field.height, 300, 100, balls[0].radius)
 const bins = makeBins(tracks, balls[0].radius)
 setTracks(balls, tracks[0])
@@ -552,24 +570,32 @@ const render = () => {
 
 /* --------- BUTTON HANDLERS ----------- */
 
+render()
 let animate = setInterval(render, 25)
-let minute = 0;
-const addMinute = () = {
+
+let minute = 0
+const addMinute = () => {
   let ball = bins.main.releaseBall()
-  ball.leaveHome()
-  minute++
-  minTracker.innerHTML = minute
+  if (ball) {
+    ball.leaveHome()
+    minute++
+    minTracker.innerHTML = minute
+  }
 }
 
-let clock = null;
+let clock = null
 const start = document.getElementById('start')
 start.addEventListener('click', () => {
-  clock = setInterval(addMinute, 10000)
+  clock = setInterval(addMinute, 5000)
 })
 
 const minTracker = document.getElementById('minute')
 const add = document.getElementById('add')
 add.addEventListener('click', addMinute)
+
+/* eventually add functionality to alter numBalls */
+const ballTracker = document.getElementById('balls')
+ballTracker.innerHTML = numBalls
 
 const array = document.getElementById('array')
 array.addEventListener('click', () => {
