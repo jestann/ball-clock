@@ -52,16 +52,6 @@ class BallClock {
     return { success: true }
   }
   
-  /* global performance */ // for linter
-  printTime (func) {
-    let start = performance.now()
-    func()
-    let end = performance.now()
-    let mil = Math.floor(end - start)
-    let sec = mil/1000
-    console.log(`Completed in ${mil} milliseconds (${sec} seconds)`)
-  }
-  
   arraysEqual (one, two) {
     return one.length === two.length && one.every((v, i) => (v === two[i]))
   }
@@ -102,92 +92,11 @@ class BallClock {
   
   /* ALGORITHM 2: MAP TRANSFORMATIONS */
   
-  getMultiples (num) {
-    let twelve = 0, sixty = 0, five = 0
-    let numLeft = num
-    if (num >= 12*60) {
-      twelve = Math.floor(num/(12*60))
-      numLeft = num % (12*60)
-    }
-    if (num >= 60) {
-      sixty = Math.floor(numLeft/60)
-      numLeft = numLeft % 60
-    }
-    if (num >= 5) {
-      five = Math.floor(numLeft/5)
-      numLeft = numLeft % 5
-    }
-    return { twelve, sixty, five, min: numLeft }
+  getMap (numBalls) {
+    this.initialize(numBalls) // no error handling needed, called internally
+    return this.count(12*60).main
   }
 
-  getMaps (numBalls, numMinutes) {
-    this.initialize(numBalls) // no error handling, called internally
-    let maps = this.count(numMinutes)
-    return maps
-  }
-  
-  mapTransformation (originalMain, mainMap, arrayMap=null) {
-    let main = [], array = []
-    if (arrayMap) { arrayMap.forEach((ballNum) => { array.push(originalMain[ballNum-1]) }) }
-    mainMap.forEach((ballNum) => { main.push(originalMain[ballNum-1]) })
-    return { main, array }
-  }
-  
-  powerTransform (originals, maps, numTimes, arrayName=null) {
-    let state = originals
-    let arrayMap = arrayName ? maps[arrayName] : null
-    for (let i = 0; i < numTimes; i++) { 
-      state = this.mapTransformation(state.main, maps.main, arrayMap) 
-      console.log(i, 'th iteration: ', state)
-    }
-    return state
-  }
-  
-  transformToMin (numBalls, numMinutes) {
-    let mults = this.getMultiples(numMinutes)
-    let maps = {}
-    if (mults.twelve) { maps.twelve = this.getMaps(numBalls, 12*60) }
-    if (mults.sixty) { maps.sixty = this.getMaps(numBalls, 60) }
-    if (mults.five) { maps.five = this.getMaps(numBalls, 5) }
-    if (mults.min) { maps.min = this.getMaps(numBalls, 1) }
-
-    this.initialize(numBalls) // clear out previous "get map" states
-    let state = { main: this.main, hour: this.hour, fiveMin: this.fiveMin, min: this.min }
-    let temp = {}
-    
-    // for a number of twelve-hour cycles
-    if (mults.twelve) {
-      temp = this.powerTransform(state, maps.twelve, mults.twelve) 
-      state.main = temp.main
-    }
-
-    // for a number of hours
-    console.log('state before: ', state)
-    console.log('map: ', maps.sixty)
-    if (mults.sixty) { 
-      temp = this.powerTransform(state, maps.sixty, mults.sixty, 'hour')
-      console.log('state after: ', temp)
-      state.main = temp.main
-      state.hour = temp.array
-    }
-
-    // for a number of five-minute increments
-    if (mults.five) {
-      temp = this.powerTransform(state, maps.five, mults.five, 'fiveMin')
-      state.main = temp.main
-      state.fiveMin = temp.array
-    }
-    
-    // for a number of minutes
-    if (mults.min) {
-      temp = this.powerTransform(state, maps.min, mults.min, 'min')
-      state.main = temp.main
-      state.min = temp.array
-    }
-
-    return state
-  }
-  
   transform (original, map) {
     let array = []
     map.forEach((ballNum) => { array.push(original[ballNum-1]) })
@@ -196,41 +105,48 @@ class BallClock {
 
   countCycles (numBalls) {
     let cycles = 1
-    const cycleMap = this.getMaps(numBalls, 12*60).main // no error handling
+    const cycleMap = this.getMap(numBalls) // no error handling needed
     let main = cycleMap // getting the cycle map initializes the arrays
     while (!this.arraysEqual(main, this.original)) { 
-      main = this.mapTransformation(main, cycleMap).main
+      main = this.transform(main, cycleMap)
       cycles++
     }
-    return cycles*12*60
+    return cycles/2
   }
   
   
   /* MODES */
   
+  // naive algorithm, still crazy fast
   modeOne (numBalls, numMinutes) {
     let initialized = this.initialize(numBalls) // keep error handling at user input level
     if (!initialized.success) { return initialized.error }
-    this.printTime(() => {
-      let result = JSON.stringify(this.transformToMin(numBalls, numMinutes))
-      console.log(`${numBalls} balls were cycled over ${numMinutes} minutes.`)
-      console.log(result)
-    })
+    let start = performance.now()
+    let result = JSON.stringify(this.count(numMinutes))
+    let end = performance.now()
+    console.log(`${numBalls} balls were cycled over ${numMinutes} minutes.`)
+    console.log(result)
+    let mil = Math.floor(end - start)
+    let sec = mil/1000
+    console.log(`Completed in ${mil} milliseconds (${sec} seconds)`)
+    return result
   }
   
+  // map transform algorithm
   modeTwo (numBalls) {
     let initialized = this.initialize(numBalls) // keep error handling at user input level
     if (!initialized.success) { return initialized.error }
-    let magic, days = null
-    this.printTime(() => {
-      magic = this.countCycles(numBalls)
-      days = magic/(60*24)
-      console.log(`${numBalls} balls cycle after ${days} days.`)
-    })
+    let start = performance.now()
+    let days = this.countCycles(numBalls)
+    let end = performance.now()
+    console.log(`${numBalls} balls cycle after ${days} days.`)
+    let mil = Math.floor(end - start)
+    let sec = mil/1000
+    console.log(`Completed in ${mil} milliseconds (${sec} seconds)`)
     return days
   }
 }
 
 const ballClock = new BallClock()
-// ballClock.runTests()
-ballClock.run(30, 325)
+ballClock.runTests()
+ballClock.run(127)
