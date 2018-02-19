@@ -15,7 +15,7 @@ class Ball {
     this.live = false
     this.moving = false
     this.speedIncrement = .5
-    this.inBin = false
+    this.inBin = false
     this.leavingBin = false
     this.goingHome = false
   }
@@ -38,11 +38,11 @@ class Ball {
     this.moving = true
   }
   
-  switch () {
-    this.dX = -this.dX
-  }
- 
-  stop () {
+  switch () {
+    this.dX = -this.dX
+  }
+  
+  stop () {
     this.moving = false
   }
   
@@ -76,23 +76,23 @@ class Ball {
     this.dY = this.speedIncrement
     this.dX = this.dY*(1/this.slope)
     
-    this.forward = track.slope > 0
+    this.forward = track.slope > 0
     this.offset = 20
-    let zeroX = this.forward ? track.startX : track.endX
-    let bigX = this.forward ? track.endX : track.startX
+    let zeroX = this.forward ? track.startX : track.endX
+    let bigX = this.forward ? track.endX : track.startX
     this.targetZeroX = zeroX /* + this.radius - this.offset */
     this.targetBigX = bigX /* - this.radius + this.offset */
   }
 
-  enterBin () {
+  enterBin () {
     this.setNextTrack(this.bin.nextTrack)
     
     let roomLeft = this.bin.addBall(this)
     if (!roomLeft) { return }
     this.numberInBin = roomLeft
-    this.inBin = true
+    this.inBin = true
     
-    this.dY = 0
+    this.dY = 0
     this.binInc = this.bin.increment
     if (this.forward) {
       this.enteredForward = true
@@ -105,7 +105,7 @@ class Ball {
       console.log('entered bin at: ', this.binFrontX)
       this.targetZeroX = this.bin.backX + this.binInc*this.numberInBin
     }
-  }
+  }
 
   leaveBin () {
     this.leavingBin = true
@@ -179,7 +179,7 @@ const drawBall = (canvas, ball) => {
   canvas.fillStyle = 'white'
   canvas.fillText(ball.number, ball.x, ball.y)
     
-  if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
+  if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
     if (ball.leavingBin) {
       console.log('STARTING tz: ', ball.targetZeroX, 'tb: ', ball.targetBigX)
       ball.startNextTrack()
@@ -194,14 +194,14 @@ const drawBall = (canvas, ball) => {
       ball.switch()
     } else if (ball.tracking) {
       console.log('ENTERING bin at: ', ball.x, 'tz: ', ball.targetZeroX, 'tb: ', ball.targetBigX)
-      ball.enterBin()
+      ball.enterBin()
     }
   }
   
   if (ball.y > ball.homeY) {
     ball.gotHome()
   }
-    
+    
   if (ball.moving) { 
     ball.x += ball.dX
     ball.y += ball.dY
@@ -352,18 +352,18 @@ class Bin {
     this.capacity = capacity
     this.balls = []
         
-    this.forward = track.slope > 0
-    this.offset = 5
+    this.forward = track.slope > 0
+    this.offset = 5
     this.maxCapacity = 6
     this.height = ballRadius*2 + 4*this.offset
     let smaller = this.capacity < this.maxCapacity ? this.capacity : this.maxCapacity
     this.width = ballRadius*2 * smaller + 2*this.offset
     this.increment = this.width / this.capacity
        
-    this.enterX = this.forward ? track.endX + this.offset : track.endX - this.offset
-    this.enterY = track.endY
-    this.renderX = this.forward ? this.enterX : this.enterX - this.width
-    this.renderY = this.enterY - this.height
+    this.enterX = this.forward ? track.endX + this.offset : track.endX - this.offset
+    this.enterY = track.endY
+    this.renderX = this.forward ? this.enterX : this.enterX - this.width
+    this.renderY = this.enterY - this.height
     this.backX = this.forward ? this.renderX + this.width : this.renderX
     this.backY = this.enterY
   }
@@ -422,21 +422,53 @@ const drawMainBin = (canvas, bin) => {
 
 const makeBins = (tracks, ballRadius) => {
   let min = new Bin('min', 5, tracks[0], tracks[1], ballRadius)
-  tracks[0].bin = min
-  let fiveMin = new Bin('fiveMin', 12, tracks[1], tracks[2], ballRadius)
-  tracks[1].bin = fiveMin
-  let hour = new Bin('hour', 12, tracks[2], tracks[3], ballRadius)
-  tracks[2].bin = hour
+  tracks[0].bin = min
+  let fiveMin = new Bin('fiveMin', 12, tracks[1], tracks[2], ballRadius)
+  tracks[1].bin = fiveMin
+  let hour = new Bin('hour', 12, tracks[2], tracks[3], ballRadius)
+  tracks[2].bin = hour
   let main = new mainBin(100, tracks, ballRadius)
-  tracks[3].bin = main
+  tracks[3].bin = main
   main.setHome(tracks[3])
-  return { min, fiveMin, hour, main }
+  return { min, fiveMin, hour, main }
 }
 
 const emptyBins = (bins) => {
   for (let name in bins) {
     bins[name].empty()
   }
+}
+
+const drawArray = (canvas, bin) => {
+  let startX = bin.renderX + 10
+  let startY = bin.renderY - 20
+  let length = bin.balls.length
+  
+  let array = []
+  bin.balls.forEach((ball) => { array.push(ball.number) })
+  /*
+  // reverse order for fiveMin?
+  if (bin.name === 'fiveMin') {
+    let temp = []
+    array.forEach((ballNum) => { temp.unshift(ballNum) })
+    array = temp
+  }
+  */
+  let string = bin.name + ': [ ' + array.toString() + ' ]'
+  
+  canvas.beginPath()
+  canvas.font = '18px sans-serif'
+  canvas.textBaseline = 'middle'
+  canvas.textAlign = 'left'
+  canvas.fillStyle = 'black'
+  canvas.fillText(string, startX, startY)
+}
+
+const drawArrays = (canvas, bins) => {
+  drawArray(canvas, bins.min)
+  drawArray(canvas, bins.fiveMin)
+  drawArray(canvas, bins.hour)
+  drawArray(canvas, bins.main)
 }
 
 
@@ -493,7 +525,7 @@ const drawTracks = (canvas, tracks) => {
 
 const field = document.getElementById('canvas')
 field.width = 1300 /* window.innerWidth */
-field.height = 650 /* window.innerHeight */
+field.height = 500 /* window.innerHeight */
 const canvas = field.getContext('2d')
 
 const balls = makeBalls(45)
@@ -502,6 +534,7 @@ const bins = makeBins(tracks, balls[0].radius)
 setTracks(balls, tracks[0])
 setHome(balls, bins.main)
 bins.main.setBalls(balls)
+let showArrays = false
 
 const render = () => {
   canvas.beginPath()
@@ -512,24 +545,46 @@ const render = () => {
   drawBins(canvas, bins)
   drawMainBin(canvas, bins.main)
   drawBinBalls(canvas, bins.main)
+  if (showArrays) { drawArrays(canvas, bins) }
 }
 
 
 
 /* --------- BUTTON HANDLERS ----------- */
 
-let animate = null
-const start = document.getElementById('start')
-start.addEventListener('click', () => {
-  animate = setInterval(render, 25)
-})
-
-const add = document.getElementById('add')
-add.addEventListener('click', () => {
+let animate = setInterval(render, 25)
+let minute = 0;
+const addMinute = () = {
   let ball = bins.main.releaseBall()
   ball.leaveHome()
+  minute++
+  minTracker.innerHTML = minute
+}
+
+let clock = null;
+const start = document.getElementById('start')
+start.addEventListener('click', () => {
+  clock = setInterval(() => {
+    let ball = 
+  }, 25)
 })
 
+const minTracker = document.getElementById('minute')
+const add = document.getElementById('add')
+add.addEventListener('click', () => {
+})
+
+const array = document.getElementById('array')
+array.addEventListener('click', () => {
+  showArrays = !showArrays
+})
+
+const stop = document.getElementById('stop')
+stop.addEventListener('click', () => {
+  clearInterval(clock)
+})
+
+/*
 const min = document.getElementById('min')
 min.addEventListener('click', () => {
   bins.min.emptyOnCommand()
@@ -544,8 +599,4 @@ const hour = document.getElementById('hour')
 hour.addEventListener('click', () => {
   bins.hour.emptyOnCommand()
 })
-
-const stop = document.getElementById('stop')
-stop.addEventListener('click', () => {
-  clearInterval(animate)
-})
+*/
