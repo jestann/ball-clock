@@ -67,7 +67,7 @@ For an implementation of the straightforward algorithm of a ball clock in Javasc
 
 The straightforward algorithm simply iterates through the states of the clock, one minute at a time.
 
-It runs pretty damn fast nonetheless. The output for some initial testing returns the following.
+It runs pretty fast nonetheless. Here's some initial test output.
 
 ```
 ---------Test 1: it runs mode one correctly----------
@@ -75,19 +75,27 @@ It runs pretty damn fast nonetheless. The output for some initial testing return
 {"min":[],"fiveMin":[22,13,25,3,7],"hour":[6,12,17,4,15],"main":[11,5,26,18,2,30,19,8,24,10,29,20,16,21,28,1,23,14,27,9]}
 Completed in 0 milliseconds (0 seconds)
 Test 1 passed.
+```
+```
 ---------Test 2: it runs mode two correctly----------
 30 balls cycle after 15 days.
 Completed in 23 milliseconds (0.023 seconds)
 45 balls cycle after 378 days.
 Completed in 74 milliseconds (0.074 seconds)
 Test 2 passed.
+```
+```
 ---------Test 3: it returns an error for invalid input----------
 ERROR: MUST CHOOSE NUMBER OF BALLS BETWEEN 27 AND 127
 Test 3 passed.
 ALL TESTS PASS.
+```
+```
 30 balls were cycled over 1000000 minutes.
 {"min":[],"fiveMin":[23,19,30,1,28,21,13,7],"hour":[20,15,22,24,4,9,14,8,11,12],"main":[6,5,29,16,10,25,3,26,17,2,27,18]}
 Completed in 91 milliseconds (0.091 seconds)
+```
+```
 127 balls cycle after 2415 days.
 Completed in 855 milliseconds (0.855 seconds)
 ```
@@ -98,7 +106,7 @@ For an implementation of a map transformation algorithm, check out [this code sa
 
 The map transformation algorithm relies on the fact that a complete rotation of a specified number of balls from original order back around to original order again will be a series of applications of the transformation from `0` hours to `12` hours. Once that transformation is calculated, it can be applied successively over and over until the original order is achieved, greatly reducing the number of iterations.
 
-The number of transformations applied will be equal to double the number of days required to complete a full rotation.
+The number of days required will be equal to half the number of transformations applied to complete a full rotation.
 
 The output for some initial testing returns the following. _(**Note:** Test 1 and the output for any Mode 1 calculation still uses the straightforward algorithm ... which doesn't seem to matter, as evidenced by the times below.)_ It's significantly faster than the original ... which was still so fast I barely noticed it.
 
@@ -108,19 +116,27 @@ The output for some initial testing returns the following. _(**Note:** Test 1 an
 {"min":[],"fiveMin":[22,13,25,3,7],"hour":[6,12,17,4,15],"main":[11,5,26,18,2,30,19,8,24,10,29,20,16,21,28,1,23,14,27,9]}
 Completed in 1 milliseconds (0.001 seconds)
 Test 1 passed.
+```
+```
 ---------Test 2: it runs mode two correctly----------
 30 balls cycle after 15 days.
 Completed in 1 milliseconds (0.001 seconds)
 45 balls cycle after 378 days.
 Completed in 4 milliseconds (0.004 seconds)
 Test 2 passed.
+```
+```
 ---------Test 3: it returns an error for invalid input----------
 ERROR: MUST CHOOSE NUMBER OF BALLS BETWEEN 27 AND 127
 Test 3 passed.
 ALL TESTS PASS.
+```
+```
 30 balls were cycled over 1000000 minutes.
 {"min":[],"fiveMin":[23,19,30,1,28,21,13,7],"hour":[20,15,22,24,4,9,14,8,11,12],"main":[6,5,29,16,10,25,3,26,17,2,27,18]}
 Completed in 86 milliseconds (0.086 seconds)
+```
+```
 127 balls cycle after 2415 days.
 Completed in 39 milliseconds (0.039 seconds)
 ```
@@ -139,13 +155,11 @@ I'm not yet finished with an implementation of this algorithm, but eventually it
 
 Drum roll please ... for the visualization.
 
-So ... since Javascript is used for a lot more than just data structures and computations, I decided to add a little HTML and CSS and build a visual simulation of a ball clock. It's not entirely perfect, but it's rainbow-colored, and that's what matters in the long run.
+So ... since Javascript is used for a lot more than just data structures and computations, I decided to add a little HTML and CSS and build a visual simulation of a ball clock. It's not entirely perfect, but it's in old-school video game rainbow colors, and that's what matters.
 
 You can find the **[visual simulation of a ball clock here](https://codepen.io/jestann/full/mXprEd/)**.
 
-Have fun...
-
 <img alt="ball clock 1" src="images/ball-clock-1.png" width="75%" align="center">
-<img alt="ball clock 2" src="images/ball-clock-1.png" width="75%" align="center">
+<img alt="ball clock 2" src="images/ball-clock-2.png" width="75%" align="center">
 
 
