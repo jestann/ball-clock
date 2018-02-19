@@ -159,6 +159,6 @@ So ... since Javascript is used for a lot more than just data structures and com
 
 You can find the **[visual simulation of a ball clock here](https://codepen.io/jestann/full/mXprEd/)**.
 
-<img alt="ball clock 1" src="images/ball-clock-1.png" width="75%" align="center">
+<img alt="ball clock 1" src="images/ball-clock-best.png" width="75%" align="center">
 
 
