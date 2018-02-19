@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <head>
   <style>
+    body {
+      background-color: black;
+      color: white;
+    }
+    
     #canvas {
-      background-color: white;
-      border-radius: 5px;
+      background-color: black;
+      /* border-radius: 5px; */
       /* border: solid 5px grey; */
     }
     
     .heading {
       font-size: 36px;
-      font-family: 'Calibri', sans-serif;
+      font-family: 'Courier', monospace;
       text-align: center;
-      padding: 10px;
-      padding-bottom: 0px;
+      padding: 0px;
+      padding-top: 5px;
       margin: 0px;
     }
     
@@ -20,8 +25,9 @@
       float: left;
       font-family: sans-serif;
       font-size: 15px;
-      padding: 10px;
-      margin-left: 20px;
+      padding-top: 5px;
+      padding-left: 10px;
+      margin: 0;
     }
     
     p {
@@ -39,13 +45,14 @@
     }
     
     .button:hover {
-      background-color: black;
+      background-color: #333;
       cursor: pointer;
     }
     
     .buttons {
       clear: both;
       margin: 10px;
+      margin-top: 5px;
       margin-left: 0px;
     }
     
@@ -54,21 +61,25 @@
       font-size: 20px;
     }
     
-    #minute {
+    .counter {
       float: left;
-      background-color: black;
+      background-color: #333;
       color: white;
       font-family: monospace;
       font-size: 30px;
       border-radius: 5px;
       padding: 10px 20px;
       margin: 3px;
-      margin-left: 0px;
+    }
+    
+    .counter#balls {
+      float: right;
+      background-color: green;
     }
     
     .array {
       float: right;
-      background-color: black;
+      background-color: #333;
     }
     
     .array:hover {
@@ -82,15 +93,16 @@
   </div>
   <canvas id='canvas'></canvas>
   <div class='buttons'>
-    <div id='minute'>0</div>
+    <div class='counter' id='minute'>0</div>
     <div class='button' id='start'>Start</div>
     <div class='button' id='add'>Tick</div>
     <div class='button' id='stop'>Stop</div>
+    <div class='body'>
+      <p>Click on the 'Start' button to begin ticking a minute on the clock every 5 seconds.</p>
+      <p>Click on the 'Tick' button to manually tick one minute.</p>
+    </div>
+    <div class='counter' id='balls'></div>
     <div class='button array' id='array'>Show Arrays</div>
-  </div>
-  <div class='body'>
-    <p>Click on the 'Start' button to begin ticking a minute on the clock every 10 seconds.</p>
-    <p>Click on the 'Tick' button to manually tick one minute.</p>
   </div>
   <!--
   <div class='buttons'>
