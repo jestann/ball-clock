@@ -44,15 +44,15 @@ main: [11, 21, 2, 4, 19, 9, 26, 10, 3, 6, 12, 8, 16]
 And the ultimate question: for a given number of balls, how many twelve-hour cycles does it take for the balls to finally return to their original numerical order?
 
 
-#### An implementation of the clock could run in two modes.
+### An implementation of the clock could run in two modes.
 
-##### **MODE 1:** Run the ball clock with a specific number of balls for a specified number of minutes.
+#### **MODE 1:** Run the ball clock with a specific number of balls for a specified number of minutes.
 ```
 ballClock.run(27, 502) // returns state
 ```
 And receive an output of the current state.
 
-##### **MODE 2:** Compute the number of days it will take a specified number of balls to return to their original state.
+#### **MODE 2:** Compute the number of days it will take a specified number of balls to return to their original state.
 ```
 ballClock.run(27) // returns days
 ```
