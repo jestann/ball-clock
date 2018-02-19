@@ -43,9 +43,19 @@ class Ball {
   stop () {
     this.moving = false
   }
+  
+  setHome (homeBin) {
+    this.homeX = homeBin.homeX
+    this.homeY = homeBin.homeY - this.radius
+    this.homeBin = homeBin
+  }
 
   setNextTrack (nextTrack) {
     this.nextTrack = nextTrack
+  }
+  
+  setStartTrack (track) {
+    this.startTrack = track
   }
   
   setTrack (track) {
@@ -121,16 +131,17 @@ class Ball {
     this.leaveBin()
   }
   
-  gotHome (newTrack) {
+  gotHome () {
     // this.inBin = true
     this.goingHome = false
-    this.setNextTrack(newTrack)
+    this.homeBin.addBall(this)
+    this.setTrack(this.startTrack)
     this.die()
   }
   
   leaveHome () {
-    this.setTrack(this.nextTrack)
-    this.start()
+    console.log('LEAVING HOME ', this.number)
+    this.makeLive()
   }
 }
 
@@ -151,6 +162,13 @@ const drawBall = (canvas, ball) => {
   canvas.stroke()
   canvas.restore()
   
+  canvas.beginPath()
+  canvas.font = '18px sans-serif'
+  canvas.textBaseline = 'middle'
+  canvas.textAlign = 'center'
+  canvas.fillStyle = 'white'
+  canvas.fillText(ball.number, ball.x, ball.y)
+  
   if (ball.x < ball.targetZeroX || ball.x > ball.targetBigX) { 
     if (ball.leavingBin) {
       console.log('STARTING tz: ', ball.targetZeroX, 'tb: ', ball.targetBigX)
@@ -168,6 +186,10 @@ const drawBall = (canvas, ball) => {
       console.log('ENTERING bin at: ', ball.x, 'tz: ', ball.targetZeroX, 'tb: ', ball.targetBigX)
       ball.enterBin()
     }
+  }
+  
+  if (ball.y > ball.homeY) {
+    ball.gotHome()
   }
   
   /* NOTE field.height here */
@@ -209,7 +231,12 @@ const makeBalls = (number) => {
 const setTracks = (balls, track) => {
   balls.forEach((ball) => { 
     ball.setTrack(track) 
+    ball.setStartTrack(track)
   })
+}
+
+const setHome = (balls, homeBin) => {
+  balls.forEach((ball) => { ball.setHome(homeBin) })
 }
 
 const drawBalls = (canvas, balls) => {
@@ -233,20 +260,23 @@ class mainBin {
     if (balls) { this.capacity = balls.length }
   } 
   
+  setHome (track) {
+    this.homeX = track.endX
+    this.homeY = track.endY
+  }
+  
   setBalls (balls) {
     this.capacity = balls.length
-    this.balls = balls
+    balls.forEach((ball) => { this.balls.push(ball) })
   }
   
   addBall (ball) {
     this.balls.push(ball)
-    ball.gotHome(this.track)
     return this.balls.length
   }
   
   releaseBall () {
     let ball = this.balls.shift()
-    ball.leaveHome()
     return ball
   }
   
@@ -332,6 +362,7 @@ const makeBins = (tracks, ballRadius) => {
   tracks[2].bin = hour
   let main = new mainBin(tracks[0])
   tracks[3].bin = main
+  main.setHome(tracks[3])
   return { min, fiveMin, hour, main }
 }
 
@@ -402,6 +433,8 @@ const balls = makeBalls(100)
 const tracks = makeTracks(field.width, field.height, 300, balls[0].radius)
 const bins = makeBins(tracks, balls[0].radius)
 setTracks(balls, tracks[0])
+setHome(balls, bins.main)
+bins.main.setBalls(balls)
 
 const render = () => {
   canvas.beginPath()
@@ -422,11 +455,10 @@ start.addEventListener('click', () => {
   animate = setInterval(render, 25)
 })
 
-let whichBall = 0
 const add = document.getElementById('add')
 add.addEventListener('click', () => {
-  startBall(balls, whichBall)
-  whichBall++
+  let ball = bins.main.releaseBall()
+  ball.leaveHome()
 })
 
 const min = document.getElementById('min')
