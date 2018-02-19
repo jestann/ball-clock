@@ -58,9 +58,9 @@ class BallClock {
 
   tick () {
     this.totalMinutes++
-    let releasedBall = this.main.shift() // shift may be a costly operation
+    let releasedBall = this.main.shift()
     if (this.min.length < 4) {
-      this.min.push(releasedBall) // push and pop may be constant time operations
+      this.min.push(releasedBall)
       
     } else if (this.fiveMin.length < 11) {
       while (this.min[0]) { this.main.push(this.min.pop()) }
@@ -125,4 +125,5 @@ class BallClock {
 
 const ballClock = new BallClock()
 ballClock.runTests()
-ballClock.run(50, 500)
+ballClock.run(30, 1000000)
+ballClock.run(127)
