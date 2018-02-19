@@ -34,7 +34,6 @@ class BallClock {
   
   setupBalls (numberOfBalls) {
     if (numberOfBalls < 27 || numberOfBalls > 127) { return false }
-    this.numberOfBalls = numberOfBalls
     this.totalMinutes = 0
     this.min = []
     this.fiveMin = []
@@ -73,7 +72,7 @@ class BallClock {
 
   compute (numberOfMinutes) {
     for (let i = 1; i <= numberOfMinutes; i++) { this.tick() }
-    return { min: this.min, fiveMin: this.fiveMin, hour: this.hour, main: this.main }
+    return JSON.stringify({ min: this.min, fiveMin: this.fiveMin, hour: this.hour, main: this.main })
   }
   
   arraysEqual (one, two) {
@@ -85,47 +84,6 @@ class BallClock {
     this.tick()
     while (!this.arraysEqual(this.main, this.original)) { this.tick() }
     return this.totalMinutes
-  }
-  
-  getTwelveMap () {
-    this.setupBalls(this.numberOfBalls)
-    let map = this.compute(12*60)
-    return map
-  }
-  
-  getHourMap () {
-    this.setupBalls(this.numberOfBalls)
-    let map = this.compute(60)
-    return map
-  }
-  
-  get5Map () {
-    this.setupBalls(this.numberOfBalls)
-    let map = this.compute(5)
-    return map
-  }
-  
-  getMultiples (num) {
-    let twelves, hours, fives = null
-    let numLeft = num
-    if (num >= 12*60) {
-      twelves = Math.floor(num/(12*60))
-      numLeft = num % (12*60)
-    }
-    if (num >= 60) {
-      hours = Math.floor(numLeft/60)
-      numLeft = numLeft % 60
-    }
-    if (num >= 5) {
-      fives = Math.floor(numLeft/5)
-      numLeft = numLeft % 5
-    }
-    return { twelves, hours, fives, mins: numLeft }
-  }
-  
-  calculateMaps (num) {
-    let mults = this.getMultiples(num)
-    
   }
 
   modeOne (numberOfBalls, numberOfMinutes) {
@@ -140,7 +98,7 @@ class BallClock {
     let end = performance.now()
     
     console.log(`${numberOfBalls} balls were cycled over ${numberOfMinutes} minutes.`)
-    console.log(JSON.stringify(result))
+    console.log(result)
     let mil = Math.floor(end - start)
     let sec = mil/1000
     console.log(`Completed in ${mil} milliseconds (${sec} seconds)`)
