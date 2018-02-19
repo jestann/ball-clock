@@ -99,6 +99,7 @@ class BallClock {
   }
 
   countMinToFullCycle (numberOfBalls) {
+    this.totalMinutes = 0 // initialize to zero out arrays before calling this method
     this.tick() // pass initial array equality
     while (!this.arraysEqual(this.main, this.original)) { this.tick() }
     return this.totalMinutes
@@ -200,11 +201,17 @@ class BallClock {
     
     return state
   }
-  
+
   countCycles (numBalls) {
-    let map = this.getMaps(numBalls, 12*60) // no error handling needed here
-    
-    
+    let cycles = 1
+    const cycleMap = this.getMaps(numBalls, 12*60).main // no error handling needed here
+    let main = cycleMap
+    // getting the cycle map initializes the arrays with numBalls and sets this.original
+    while (!this.arraysEqual(main, this.original)) { 
+      main = this.mapTransformation(main, cycleMap).main
+      cycles++
+    }
+    return cycles*12*60
   }
   
   modeOne (numBalls, numMinutes) {
@@ -222,7 +229,7 @@ class BallClock {
     if (!initialized.success) { return initialized.error }
     let magic, days = null
     this.printTime(() => {
-      magic = this.countCycles()
+      magic = this.countCycles(numBalls)
       days = magic/(60*24)
       console.log(`${numBalls} balls cycle after ${days} days.`)
     })
