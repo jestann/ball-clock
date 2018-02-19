@@ -4,19 +4,100 @@
     #canvas {
       background-color: white;
       border-radius: 5px;
-      border: solid 5px grey;
+      /* border: solid 5px grey; */
+    }
+    
+    .heading {
+      font-size: 36px;
+      font-family: 'Calibri', sans-serif;
+      text-align: center;
+      padding: 10px;
+      padding-bottom: 0px;
+      margin: 0px;
+    }
+    
+    .body {
+      float: left;
+      font-family: sans-serif;
+      font-size: 15px;
+      padding: 10px;
+      margin-left: 20px;
+    }
+    
+    p {
+      margin: 0;
+    }
+    
+    .button {
+      float: left;
+      background-color: green;
+      color: white;
+      font-family: sans-serif;
+      border-radius: 5px;
+      padding: 10px 20px;
+      margin: 3px;
+    }
+    
+    .button:hover {
+      background-color: black;
+      cursor: pointer;
+    }
+    
+    .buttons {
+      clear: both;
+      margin: 10px;
+      margin-left: 0px;
+    }
+    
+    .minutes {
+      float: left;
+      font-size: 20px;
+    }
+    
+    #minute {
+      float: left;
+      background-color: black;
+      color: white;
+      font-family: monospace;
+      font-size: 30px;
+      border-radius: 5px;
+      padding: 10px 20px;
+      margin: 3px;
+      margin-left: 0px;
+    }
+    
+    .array {
+      float: right;
+      background-color: black;
+    }
+    
+    .array:hover {
+      background-color: grey;
     }
   </style>
 </head>
 <body>
-  <canvas id='canvas'></canvas>
-  <div>
-    <button id='start'>Start</button>
-    <button id='add'>Add Ball</button>
-    <button id='min'>Minute</button>
-    <button id='five'>Five</button>
-    <button id='hour'>Hour</button>
-    <button id='stop'>Stop</button>
+  <div class='heading'>
+    A Visual Ball Clock
   </div>
+  <canvas id='canvas'></canvas>
+  <div class='buttons'>
+    <div id='minute'>0</div>
+    <div class='button' id='start'>Start</div>
+    <div class='button' id='add'>Tick</div>
+    <div class='button' id='stop'>Stop</div>
+    <div class='button array' id='array'>Show Arrays</div>
+  </div>
+  <div class='body'>
+    <p>Click on the 'Start' button to begin ticking a minute on the clock every 10 seconds.</p>
+    <p>Click on the 'Tick' button to manually tick one minute.</p>
+  </div>
+  <!--
+  <div class='buttons'>
+    <div class='button' id='min'>Empty Minute</div>
+    <div class='button' id='five'>Empty Five</div>
+    <div class='button' id='hour'>Empty Hour</div>
+  </div>
+  -->
   <script src='/visual.js'></script>
 </body>
