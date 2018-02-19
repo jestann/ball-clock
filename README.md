@@ -155,11 +155,10 @@ I'm not yet finished with an implementation of this algorithm, but eventually it
 
 Drum roll please ... for the visualization.
 
-So ... since Javascript is used for a lot more than just data structures and computations, I decided to add a little HTML and CSS and build a visual simulation of a ball clock. It's not entirely perfect, but it's in old-school video game rainbow colors, and that's what matters.
+So ... since Javascript is used for a lot more than just data structures and computations, I decided to add a little HTML and CSS and build a visual simulation of a ball clock. It's not entirely perfect, but it's an old-school video game rainbow, and that's what matters.
 
 You can find the **[visual simulation of a ball clock here](https://codepen.io/jestann/full/mXprEd/)**.
 
 <img alt="ball clock 1" src="images/ball-clock-1.png" width="75%" align="center">
-<img alt="ball clock 2" src="images/ball-clock-2.png" width="75%" align="center">
 
 
