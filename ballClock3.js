@@ -57,7 +57,6 @@ class BallClock {
   }
 
   
-  
   /* NAIVE ALGORITHM */
   
   tick () {
@@ -87,7 +86,6 @@ class BallClock {
     for (let i = 1; i <= numMinutes; i++) { this.tick() }
     return { min: this.min, fiveMin: this.fiveMin, hour: this.hour, main: this.main }
   }
-  
   
   
   /* ALGORITHM 3: LCM */
