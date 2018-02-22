@@ -146,16 +146,51 @@ Completed in 39 milliseconds (0.039 seconds)
 
 It isn't a far step to realize that the number of transformations applied will be a collection of individual transformations on specific ball-number-slots. For instance, ball 1 may move to slot 8 and then to slot 10 and then back around to slot 8. The number of steps it takes for each ball-number-slot to complete a full rotation gives insight into how many steps it takes for the entire set of all ball-number-slots to complete a full rotation.
 
-If the individual ball-number-slot steps are calculated, one can find the least common multiple of all these numbers of steps to find the number of steps required for the full set of balls to rotate. This will reduce the number of iterations required down to only the initial map transformation.
+If the individual ball-number-slot steps are calculated, one can find the least common multiple of all these ball-number-slot-steps to find the number of steps required for the full set of balls to rotate. This will reduce the number of clock iterations required by the algorithm down to only the initial map transformation.
 
-I'm not yet finished with an implementation of this algorithm, but eventually it will be [here](https://repl.it/@jestann/ball-clock-3).
+The LCM of two numbers can be calculated by finding their product and dividing it by their GCD. And it's fairly simple to calculate GCD using Euclid's algorithm.
+
+The code for an implementation of this algorithm can be found in [this code sandbox](https://repl.it/@jestann/ball-clock-3), as well as in [ballClock3.js](ballClock3.js).
+
+Check out the output for this third run of tests (it's the Test 2 results). It's so fast the mechanism I have for measuring it fails me. And the final call to rotate `127` balls is cut in half timewise, from `39` milliseconds to `15` milliseconds. Not bad.
+
+```
+---------Test 1: it runs mode one correctly----------
+30 balls were cycled over 325 minutes.
+{"min":[],"fiveMin":[22,13,25,3,7],"hour":[6,12,17,4,15],"main":[11,5,26,18,2,30,19,8,24,10,29,20,16,21,28,1,23,14,27,9]}
+Completed in 0 milliseconds (0 seconds)
+Test 1 passed.
+```
+```
+---------Test 2: it runs mode two correctly----------
+30 balls cycle after 15 days.
+Completed in 1 milliseconds (0.001 seconds)
+45 balls cycle after 378 days.
+Completed in 0 milliseconds (0 seconds)
+Test 2 passed.
+```
+```
+---------Test 3: it returns an error for invalid input----------
+ERROR: MUST CHOOSE NUMBER OF BALLS BETWEEN 27 AND 127
+Test 3 passed.
+ALL TESTS PASS.
+```
+```
+27 balls were cycled over 1000000 minutes.
+{"min":[],"fiveMin":[11,4,18,13,3,21,10,16],"hour":[20,7,1,17,22,25,9,24,26,23],"main":[19,5,12,6,14,27,8,15,2]}
+Completed in 86 milliseconds (0.086 seconds)
+```
+```
+127 balls cycle after 2415 days.
+Completed in 15 milliseconds (0.015 seconds)
+```
 
 
 ### But in the end ... I kinda just want to _see_ it.
 
 Drum roll please ... for the visualization.
 
-So ... since Javascript is used for a lot more than just data structures and computations, I decided to add a little HTML and CSS and build a visual simulation of a ball clock. It's not entirely perfect, but it involves old-school video game rainbows, and that's what matters.
+So ... since Javascript is used for a lot more than just data structures and computations, I decided to add a little HTML and CSS and build a visual simulation of a ball clock. It's not entirely perfect, but it involves some old-school video game rainbows, and that's what matters.
 
 You can find the **[visual simulation of a ball clock here](https://codepen.io/jestann/full/mXprEd/)**.
 
